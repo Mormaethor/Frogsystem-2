@@ -53,20 +53,19 @@ function sitemapEntityEscape($raw_text)
 /* returns a string containing the content of a XML sitemap */
 function sitemapXML()
 {
-  global $FD, $global_config_arr;
+  global $FD;
   //start with sitemap's content
   $sitemap = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
             .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
   //add main page first
-  $v_host = $global_config_arr['virtualhost'];
+  $v_host = $FD->cfg('virtualhost');
   $sitemap .= '  <url>'."\n"
              .'    <loc>'.$v_host.'</loc>'."\n"
              .'    <changefreq>hourly</changefreq>'."\n"
              .'  </url>'."\n";
   //now the articles
-  $query = mysql_query ('SELECT article_url FROM `'.$global_config_arr['pref'].'articles` '
-                       .'WHERE `article_url` != \'fscode\' ORDER BY `article_url` ASC',
-                      $FD->sql()->conn() );
+  $query =  $FD->sql()->doQuery('SELECT article_url FROM `{..pref..}articles` '
+                       .'WHERE `article_url` != \'fscode\' ORDER BY `article_url` ASC');
   while ($row=mysql_fetch_assoc($query))
   {
     $sitemap .= '  <url>'."\n"
