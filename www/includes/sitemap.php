@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     Additional permission under GNU GPL version 3 section 7
 
     If you modify this Program, or any covered work, by linking or combining it
@@ -58,18 +58,42 @@ function sitemapXML()
   $sitemap = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
             .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
   //add main page first
-  $v_host = $FD->cfg('virtualhost');
+  $v_host = sitemapEntityEscape($FD->cfg('virtualhost'));
   $sitemap .= '  <url>'."\n"
              .'    <loc>'.$v_host.'</loc>'."\n"
              .'    <changefreq>hourly</changefreq>'."\n"
              .'  </url>'."\n";
+  //If main page is not the standard (news), then add the news page.
+  if (($FD->cfg('home')==1) && ($FD->cfg('home_text')!='news'))
+  {
+    $sitemap .= '  <url>'."\n"
+             .'    <loc>'.$v_host.'?go=news</loc>'."\n"
+             .'    <changefreq>hourly</changefreq>'."\n"
+             .'  </url>'."\n";
+  }
   //now the articles
   $query =  $FD->sql()->doQuery('SELECT article_url FROM `{..pref..}articles` '
                        .'WHERE `article_url` != \'fscode\' ORDER BY `article_url` ASC');
   while ($row=mysql_fetch_assoc($query))
   {
     $sitemap .= '  <url>'."\n"
-               .'    <loc>'.sitemapEntityEscape($v_host.'?go='.$row['article_url']).'</loc>'."\n"
+               .'    <loc>'.$v_host.'?go='.sitemapEntityEscape($row['article_url']).'</loc>'."\n"
+               .'  </url>'."\n";
+  }//while
+  //...and the downloads - open/public downloads only
+  $query =  $FD->sql()->doQuery('SELECT dl_id FROM `{..pref..}dl` WHERE `dl_open`=1');
+  while ($row=mysql_fetch_assoc($query))
+  {
+    $sitemap .= '  <url>'."\n"
+               .'    <loc>'.$v_host.sitemapEntityEscape('?go=dlfile&id='.$row['dl_id']).'</loc>'."\n"
+               .'  </url>'."\n";
+  }//while
+  //...and the gallery categories - not sure about this one, search engines might not like it
+  $query =  $FD->sql()->doQuery('SELECT cat_id FROM `{..pref..}screen_cat` WHERE `cat_visibility`=1');
+  while ($row=mysql_fetch_assoc($query))
+  {
+    $sitemap .= '  <url>'."\n"
+               .'    <loc>'.$v_host.sitemapEntityEscape('?go=gallery&catid='.$row['cat_id']).'</loc>'."\n"
                .'  </url>'."\n";
   }//while
   //end with closing urlset tag

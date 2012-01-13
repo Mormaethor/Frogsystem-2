@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     Additional permission under GNU GPL version 3 section 7
 
     If you modify this Program, or any covered work, by linking or combining it
@@ -31,6 +31,9 @@
 // TODO: - current design/layout is terrible, change it (but keep it simple
 //         and straightforward)
 //       - localization needed
+
+if (ACP_GO == "sitemap")
+{
 
   require_once(FS2_ROOT_PATH . "includes/sitemap.php");
 
@@ -49,7 +52,7 @@
   if (isset($_GET['action']))
   {
     if ($_GET['action']=='update')
-    { 
+    {
       //copy old sitemap (just in case)
       $copy_success = true;
       if ($has_sitemap)
@@ -107,7 +110,7 @@
     {
       $modified = date('d.m.Y, H:i:s', $modified);
     }
-    echo '    <tr><td class="config">Letzte Aktualisierung: '.$modified.'</td></tr>'."\n";
+    echo '    <tr><td class="configthin">Letzte Aktualisierung: '.$modified.'</td></tr>'."\n";
   }
   else
   {
@@ -118,7 +121,7 @@
       .'    </tr>'."\n";
   //update?
   echo '    <tr>'."\n"
-      .'      <td class="config">'."\n"
+      .'      <td class="configthin">'."\n"
       .'        <a href="?go=sitemap&amp;action=update">Sitemap ';
   if ($has_sitemap)
   {
@@ -132,4 +135,6 @@
       .'      </td>'."\n"
       .'    </tr>'."\n"
       .'  </table>';
+
+} //ACP_GO
 ?>
