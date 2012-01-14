@@ -45,7 +45,8 @@
 function sitemapEntityEscape($raw_text)
 {
   // '&' to '&amp;' goes first to avoid trouble with other escape sequences
-  $raw_text = str_replace('&', '&amp;', $raw_text);
+  // $raw_text = str_replace('&', '&amp;', $raw_text);
+  // no & escaping, url() function seems to do that for us
   //replace the rest
   return str_replace(array("'", '"', '>', '<'), array('&apos;', '&quot;', '&gt;', '&lt;'), $raw_text);
 }//function
@@ -67,7 +68,7 @@ function sitemapXML()
   if (($FD->cfg('home')==1) && ($FD->cfg('home_text')!='news'))
   {
     $sitemap .= '  <url>'."\n"
-             .'    <loc>'.$v_host.'?go=news</loc>'."\n"
+             .'    <loc>'.sitemapEntityEscape(url('news', array(), true)).'</loc>'."\n"
              .'    <changefreq>hourly</changefreq>'."\n"
              .'  </url>'."\n";
   }
@@ -77,7 +78,7 @@ function sitemapXML()
   while ($row=mysql_fetch_assoc($query))
   {
     $sitemap .= '  <url>'."\n"
-               .'    <loc>'.$v_host.'?go='.sitemapEntityEscape($row['article_url']).'</loc>'."\n"
+               .'    <loc>'.sitemapEntityEscape(url($row['article_url'], array(), true)).'</loc>'."\n"
                .'  </url>'."\n";
   }//while
   //...and the downloads - open/public downloads only
@@ -85,7 +86,7 @@ function sitemapXML()
   while ($row=mysql_fetch_assoc($query))
   {
     $sitemap .= '  <url>'."\n"
-               .'    <loc>'.$v_host.sitemapEntityEscape('?go=dlfile&id='.$row['dl_id']).'</loc>'."\n"
+               .'    <loc>'.sitemapEntityEscape(url('dlfile', array('id' => $row['dl_id']), true)).'</loc>'."\n"
                .'  </url>'."\n";
   }//while
   //...and the gallery categories - not sure about this one, search engines might not like it
@@ -93,7 +94,7 @@ function sitemapXML()
   while ($row=mysql_fetch_assoc($query))
   {
     $sitemap .= '  <url>'."\n"
-               .'    <loc>'.$v_host.sitemapEntityEscape('?go=gallery&catid='.$row['cat_id']).'</loc>'."\n"
+               .'    <loc>'.sitemapEntityEscape(url('gallery', array('catid' => $row['cat_id']), true)).'</loc>'."\n"
                .'  </url>'."\n";
   }//while
   //end with closing urlset tag
