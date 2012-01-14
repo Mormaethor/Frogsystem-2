@@ -102,4 +102,62 @@ function sitemapXML()
   return $sitemap;
 }//function
 
+/* returns a string containing the HTML code for a human-readable sitemap
+
+   parameters:
+       full - (bool) if set to true, the code contains the full URLs, otherwise
+              URLs are relative
+*/
+function sitemapHumanReadable($full)
+{
+  global $FD;
+  settype($full, 'boolean');
+
+  $v_host = $FD->cfg('virtualhost');
+  //start with list
+  $sitemap = '<ul>'."\n";
+  //home comes first
+  $sitemap .= '  <li><a href="'.$v_host.'">Hauptseite</a></li>'."\n";
+  //news page next (we list it anyway, although it might be the same as the main page in most cases)
+  $sitemap .= '  <li><a href="'.url('news', array(), $full).'">Hauptseite</a></li>'."\n";
+  //articles
+  $sitemap .= '  <li><strong>Artikel</strong>'."\n"
+             .'    <ul>'."\n";
+  $query =  $FD->sql()->doQuery('SELECT article_url, article_title, article_cat_id, cat_id, cat_name FROM `{..pref..}articles` '
+                       .'LEFT JOIN `{..pref..}articles_cat` ON article_cat_id=cat_id '
+                       .'WHERE `article_url` != \'fscode\' ORDER BY `cat_name` ASC, `article_url` ASC');
+  $last_cat = -1;
+  $cat_open = false;
+  while ($row=mysql_fetch_assoc($query))
+  {
+    //new category started?
+    if ($last_cat!=$row['cat_id'])
+    {
+      //Do we need to end a previous category?
+      if ($cat_open)
+      {
+        $sitemap .= '        </ul>'."\n"
+                   .'      </li>'."\n";
+      }
+      //start new category
+      $sitemap .= '      <li><strong>Kategorie: '.$row['cat_name'].'</strong>'."\n"
+                 .'        <ul>'."\n";
+      $cat_open = true;
+      $last_cat = $row['cat_id'];
+    }
+    //next article
+    $sitemap .= '          <li><a href="'.url($row['article_url'], array(), $full).'">'.$row['article_title'].'</a></li>'."\n";
+  }//while
+  //Do we need to end a previous category?
+  if ($cat_open)
+  {
+    $sitemap .= "        </ul>\n      </li>\n";
+  }
+  //close <ul> and <li> tag for articles
+  $sitemap .= "    </ul>\n  </li>\n";
+  //end with closing list tag
+  $sitemap .= '</ul>';
+  return $sitemap;
+}//function
+
 ?>

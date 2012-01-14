@@ -51,7 +51,7 @@ if (ACP_GO == "sitemap")
 
   if (isset($_GET['action']))
   {
-    if ($_GET['action']=='update')
+    if ($_GET['action']=='update-xml')
     {
       //copy old sitemap (just in case)
       $copy_success = true;
@@ -59,7 +59,7 @@ if (ACP_GO == "sitemap")
       {
         if (!copy($sitemap_location, $sitemap_location.'.old'))
         {
-          echo '    <tr><td class="config"><strong>Fehler</strong> beim Sichern der alten Sitemap.</td></tr>'."\n";
+          echo '    <tr><td class="config"><strong>Fehler</strong> beim Sichern der alten XML-Sitemap.</td></tr>'."\n";
           $copy_success = false;
         }
       }
@@ -83,7 +83,7 @@ if (ACP_GO == "sitemap")
           }
           else
           {
-            echo '    <tr><td class="config"><strong>Sitemap aktualisiert</strong>, '.$status.' Bytes geschrieben!</td></tr>'."\n";
+            echo '    <tr><td class="config"><strong>XML-Sitemap aktualisiert</strong>, '.$status.' Bytes geschrieben!</td></tr>'."\n";
           }
           fclose($res);
           clearstatcache(); //we need that, because otherwise PHP would use the cached value for file_exists() in the next line
@@ -91,7 +91,7 @@ if (ACP_GO == "sitemap")
         }
       }
     }
-    else
+    else if ($_GET['action']!='update-human')
     {
       echo '    <tr><td class="config"><strong>Ung&uuml;tige Aktion!</strong></td></tr>'."\n";
     }
@@ -99,7 +99,7 @@ if (ACP_GO == "sitemap")
 
   if ($has_sitemap)
   {
-    echo '    <tr><td class="config">Sitemap vorhanden.</td></tr>'."\n";
+    echo '    <tr><td class="config">XML-Sitemap vorhanden.</td></tr>'."\n";
     //get time of last modification
     $modified = filemtime($sitemap_location);
     if ($modified===false)
@@ -114,7 +114,7 @@ if (ACP_GO == "sitemap")
   }
   else
   {
-    echo '    <tr><td class="config"><strong>Keine</strong> Sitemap vorhanden.</td></tr>'."\n";
+    echo '    <tr><td class="config"><strong>Keine</strong> XML-Sitemap vorhanden.</td></tr>'."\n";
   }
   echo '    <tr>'."\n"
       .'      <td class="config" style="height: 20px;"> &nbsp; </td>'."\n"
@@ -122,7 +122,7 @@ if (ACP_GO == "sitemap")
   //update?
   echo '    <tr>'."\n"
       .'      <td class="configthin">'."\n"
-      .'        <a href="?go=sitemap&amp;action=update">Sitemap ';
+      .'        <a href="?go=sitemap&amp;action=update-xml">XML-Sitemap ';
   if ($has_sitemap)
   {
     echo 'aktualisieren';
@@ -131,10 +131,30 @@ if (ACP_GO == "sitemap")
   {
     echo 'erstellen';
   }
-  echo '</a>'."\n"
+  echo '</a><br><br><a href="?go=sitemap&amp;action=update-human">Verst&auml;ndliche Sitemap erstellen</a>'."\n"
       .'      </td>'."\n"
       .'    </tr>'."\n"
       .'  </table>';
+
+  //human readable sitemap requested?
+  if ($_GET['action']=='update-human')
+  {
+    $sitemap = sitemapHumanReadable(true);
+    echo
+    '<br><br>
+     <table class="configtable" cellpadding="4" cellspacing="0">
+      <tr>
+        <td class="line" colspan="2">Lesbare Sitemap</td>
+      </tr>
+      <tr>
+        <td class="config">Sitemapcode:</td>
+        <td>
+          <textarea name="dummy" cols="50" rows="30">'.$sitemap.'
+          </textarea>
+        </td>
+      </tr>
+    </table>'."\n";
+  }
 
 } //ACP_GO
 ?>
