@@ -28,9 +28,11 @@
 */
 
 
-// TODO: - allow exclusion of certain articles besides the fscode article
-//       - add <lastmod> attributes (maybe after that modification thing is implemented)
-
+/* TODO: - add <lastmod> attributes (maybe after that modification thing is
+           implemented)
+         - get the category/sub category relation for downloads right (affects
+           human-readable sitemap only; XML and bots do not care)
+*/
 
 /* replaces all special characters with their respective entity as described by
    the sitemap standard
@@ -50,8 +52,26 @@ function sitemapEntityEscape($raw_text)
   return str_replace(array("'", '"', '>', '<'), array('&apos;', '&quot;', '&gt;', '&lt;'), $raw_text);
 }//function
 
-/* returns a string containing the content of a XML sitemap */
-function sitemapXML()
+//utility function to build the where clause for the following two sitemap functions
+function WhereClauseWithIDExclusion($id_array)
+{
+  $result = 'WHERE `article_url` != \'fscode\'';
+  settype($id_array, 'array');
+  foreach($id_array as $id)
+  {
+    $result .= ' AND `article_id`!=\''.((int)$id)."'";
+  }//foreach
+  return $result;
+}
+
+/* returns a string containing the content of a XML sitemap
+
+   parameters:
+       skip_articles - array that contains the numeric IDs of the articles that
+                       shall not be included in the sitemap (useful for un-
+                       finished articles that shall not appear yet)
+*/
+function sitemapXML($skip_articles)
 {
   global $FD;
   //start with sitemap's content
@@ -73,7 +93,7 @@ function sitemapXML()
   }
   //now the articles
   $query =  $FD->sql()->doQuery('SELECT article_url FROM `{..pref..}articles` '
-                       .'WHERE `article_url` != \'fscode\' ORDER BY `article_url` ASC');
+                       .WhereClauseWithIDExclusion($skip_articles).' ORDER BY `article_url` ASC');
   while ($row=mysql_fetch_assoc($query))
   {
     $sitemap .= '  <url>'."\n"
@@ -104,10 +124,13 @@ function sitemapXML()
 /* returns a string containing the HTML code for a human-readable sitemap
 
    parameters:
-       full - (bool) if set to true, the code contains the full URLs, otherwise
-              URLs are relative
+       full          - (bool) if set to true, the code contains the full URLs,
+                       otherwise URLs are relative
+       skip_articles - array that contains the numeric IDs of the articles that
+                       shall not be included in the sitemap (useful for un-
+                       finished articles that shall not appear yet)
 */
-function sitemapHumanReadable($full)
+function sitemapHumanReadable($full, $skip_articles)
 {
   global $FD;
   settype($full, 'boolean');
@@ -124,7 +147,7 @@ function sitemapHumanReadable($full)
              .'    <ul>'."\n";
   $query =  $FD->sql()->doQuery('SELECT article_url, article_title, article_cat_id, cat_id, cat_name FROM `{..pref..}articles` '
                        .'LEFT JOIN `{..pref..}articles_cat` ON article_cat_id=cat_id '
-                       .'WHERE `article_url` != \'fscode\' ORDER BY `cat_name` ASC, `article_url` ASC');
+                       .WhereClauseWithIDExclusion($skip_articles).' ORDER BY `cat_name` ASC, `article_url` ASC');
   $last_cat = -1;
   $cat_open = false;
   while ($row=mysql_fetch_assoc($query))
