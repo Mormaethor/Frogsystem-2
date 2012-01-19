@@ -149,8 +149,7 @@ if (ACP_GO == "sitemap")
       <tr>
         <td class="config">Sitemapcode:</td>
         <td>
-          <textarea name="dummy" cols="50" rows="30">'.$sitemap.'
-          </textarea>
+          <textarea name="dummy" cols="50" rows="30">'.$sitemap.'</textarea>
         </td>
       </tr>
     </table>'."\n";

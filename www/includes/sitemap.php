@@ -30,7 +30,6 @@
 
 // TODO: - allow exclusion of certain articles besides the fscode article
 //       - add <lastmod> attributes (maybe after that modification thing is implemented)
-//       - option to create a human-readable sitemap (i.e. not XML but (X)HTML)
 
 
 /* replaces all special characters with their respective entity as described by
@@ -155,6 +154,57 @@ function sitemapHumanReadable($full)
   }
   //close <ul> and <li> tag for articles
   $sitemap .= "    </ul>\n  </li>\n";
+
+  //downloads
+  $sitemap .= '  <li><strong>Downloads</strong>'."\n"
+             .'    <ul>'."\n";
+  $query =  $FD->sql()->doQuery('SELECT dl_id, `{..pref..}dl`.cat_id AS cat_id, dl_name, `{..pref..}dl_cat`.cat_id, cat_name FROM `{..pref..}dl` '
+                       .'LEFT JOIN `{..pref..}dl_cat` ON `{..pref..}dl`.cat_id=`{..pref..}dl_cat`.cat_id '
+                       .'WHERE `dl_open`=1 ORDER BY `cat_name` ASC, `dl_name` ASC');
+  $last_cat = -1;
+  $cat_open = false;
+  while ($row=mysql_fetch_assoc($query))
+  {
+    //new dl category started?
+    if ($last_cat!=$row['cat_id'])
+    {
+      //Do we need to end a previous category?
+      if ($cat_open)
+      {
+        $sitemap .= '        </ul>'."\n"
+                   .'      </li>'."\n";
+      }
+      //start new category
+      $sitemap .= '      <li><a href="'.url('download', array('cat_id' => $row['cat_id']), $full).'"><strong>Kategorie: '.$row['cat_name'].'</strong></a>'."\n"
+                 .'        <ul>'."\n";
+      $cat_open = true;
+      $last_cat = $row['cat_id'];
+    }
+    //next download
+    $sitemap .= '          <li><a href="'.url('dlfile', array('id' => $row['dl_id']), $full).'">'.$row['dl_name'].'</a></li>'."\n";
+  }//while
+  //Do we need to end a previous category?
+  if ($cat_open)
+  {
+    $sitemap .= "        </ul>\n      </li>\n";
+    $cat_open = false;
+  }
+  //close <ul> and <li> tag for downloads
+  $sitemap .= "    </ul>\n  </li>\n";
+
+  //screenshots
+  $sitemap .= '  <li><a href="'.url('gallery', array(), $full).'"><strong>Screenshots</strong></a>'."\n"
+             .'    <ul>'."\n";
+  $query =  $FD->sql()->doQuery('SELECT cat_id, cat_name FROM `{..pref..}screen_cat` '
+                       .'WHERE `cat_visibility`=1 ORDER BY `cat_name` ASC');
+  while ($row=mysql_fetch_assoc($query))
+  {
+    //next gallery category
+    $sitemap .= '      <li><a href="'.url('gallery', array('catid' => $row['cat_id']), $full).'">'.$row['cat_name'].'</a></li>'."\n";
+  }//while
+  //close <ul> and <li> tag for screenshots
+  $sitemap .= "    </ul>\n  </li>\n";
+
   //end with closing list tag
   $sitemap .= '</ul>';
   return $sitemap;
