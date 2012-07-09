@@ -14,6 +14,7 @@ $dbc['pref'] = 'fs2_'; //Table Prefix
 $spam = 'wKAztWWB2Z'; //Anti-Spam Encryption-Code
 $path = dirname(__FILE__) . '/'; //Dateipfad
 define('SLASH', TRUE);
+define('DEBUG', TRUE);
 
 
 // TODO: Pre-Import Hook
@@ -62,20 +63,20 @@ try {
     $en = strpos($_SERVER['HTTP_ACCEPT_LANGUAGE'], 'en');
 
     if ($de !== false && $de < $en)
-        $TEXT['frontend'] = new lang ('de_DE', 'frontend');
+        $TEXT = new lang ('de_DE', 'frontend');
     else
-        $TEXT['frontend'] = new lang ('en_US', 'frontend');
+        $TEXT = new lang ('en_US', 'frontend');
 
     // No-Connection-Page Template
     $template = '
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
-        <title>'.$TEXT['frontend']->get('no_connection').'</title>
+        <title>'.$TEXT->get("no_connection").'</title>
     </head>
     <body>
 		<p>
-			<b>'.$TEXT['frontend']->get('no_connection_to_the_server').'</b>
+			<b>'.$TEXT->get("no_connection_to_the_server").'</b>
         </p>
     </body>
 </html>

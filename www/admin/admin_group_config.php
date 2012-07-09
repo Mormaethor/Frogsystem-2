@@ -1,34 +1,37 @@
-<?php
+<?php if (!defined('ACP_GO')) die('Unauthorized access!');
+
+###################
+## Page Settings ##
+###################
+$used_cols = array('group_pic_x', 'group_pic_y', 'group_pic_size');
+
 ///////////////////////
 //// Update Config ////
 ///////////////////////
 
 if (
-		$_POST['group_pic_x'] && $_POST['group_pic_x'] > 0
-		&& $_POST['group_pic_y'] && $_POST['group_pic_y'] > 0
-		&& $_POST['group_pic_size'] && $_POST['group_pic_size'] > 0
+		isset($_POST['group_pic_x']) && $_POST['group_pic_x'] > 0
+		&& isset($_POST['group_pic_y']) && $_POST['group_pic_y'] > 0
+		&& isset($_POST['group_pic_size']) && $_POST['group_pic_size'] > 0
 	)
 {
-	// security functions
-    settype ( $_POST['group_pic_x'], 'integer' );
-    settype ( $_POST['group_pic_y'], 'integer' );
-    settype ( $_POST['group_pic_size'], 'integer' );
-
-	// MySQL-Queries
-    mysql_query ( '
-					UPDATE `'.$global_config_arr['pref']."user_config`
-					SET
-						`group_pic_x` = '".$_POST['group_pic_x']."',
-						`group_pic_y` = '".$_POST['group_pic_y']."',
-						`group_pic_size` = '".$_POST['group_pic_size']."'
-					WHERE `id` = '1'
-	", $FD->sql()->conn() );
-
-	// system messages
-    systext($admin_phrases['common']['changes_saved'], $admin_phrases['common']['info']);
+    // prepare data
+    $data = frompost($used_cols);
+      
+    // save config
+    try {
+        $FD->saveConfig('groups', $data);
+        systext($FD->text('admin', 'config_saved'), $FD->text('admin', 'info'), 'green', $FD->text('admin', 'icon_save_ok'));
+    } catch (Exception $e) {
+        systext(
+            $FD->text('admin', 'config_not_saved').'<br>'.
+            (DEBUG ? $e->getMessage() : $FD->text('admin', 'unknown_error')),
+            $FD->text('admin', 'error'), 'red', $FD->text('admin', 'icon_save_error')
+        );        
+    }
 
     // Unset Vars
-    unset ( $_POST );
+    unset($_POST);
 }
 
 /////////////////////
@@ -37,25 +40,19 @@ if (
 
 if ( TRUE )
 {
-	// Display Error Messages
-	if ( isset ( $_POST['sended'] ) ) {
-		systext ( $admin_phrases['common']['note_notfilled'], $admin_phrases['common']['error'], TRUE );
+    // Display Error Messages
+    if (isset($_POST['sended'])) {
+        systext($FD->text('admin', 'changes_not_saved').'<br>'.$FD->text('admin', 'form_not_filled'), $FD->text('admin', 'error'), 'red', $FD->text('admin', 'icon_save_error'));
 
-	// Load Data from DB into Post
-	} else {
-	    $index = mysql_query ( '
-								SELECT *
-								FROM '.$global_config_arr['pref']."user_config
-								WHERE `id` = '1'
-		", $FD->sql()->conn() );
-	    $config_arr = mysql_fetch_assoc($index);
-	    putintopost ( $config_arr );
-	}
-
-	// security functions
-    settype ( $_POST['group_pic_x'], 'integer' );
-    settype ( $_POST['group_pic_y'], 'integer' );
-    settype ( $_POST['group_pic_size'], 'integer' );
+    // Load Data from DB into Post
+    } else {
+        $data = $sql->getRow('config', array('config_data'), array('W' => "`config_name` = 'groups'"));
+        $data = json_array_decode($data['config_data']);
+        putintopost($data);
+    }    
+    
+    // security functions
+    $_POST = array_map('killhtml', $_POST);
 
 	// Display Form
     echo'
@@ -72,8 +69,8 @@ if ( TRUE )
                                 <td class="config">
                                     <input class="text center" size="3" maxlength="3" name="group_pic_x" value="'.$_POST['group_pic_x'].'">
                                     x
-                                    <input class="text center" size="3" maxlength="3" name="group_pic_y" value="'.$_POST['group_pic_y'].'"> '.$admin_phrases['common']['pixel'].'<br>
-                                    <span class="small">(Breite x H&ouml;he; '.$admin_phrases['common']['zero_not_allowed'].')</span>
+                                    <input class="text center" size="3" maxlength="3" name="group_pic_y" value="'.$_POST['group_pic_y'].'"> '.$FD->text('admin', 'pixel').'<br>
+                                    <span class="small">(Breite x H&ouml;he; '.$FD->text('admin', 'zero_not_allowed').')</span>
                                 </td>
                             </tr>
                             <tr>
@@ -83,14 +80,14 @@ if ( TRUE )
                                 </td>
                                 <td class="config">
                                     <input class="text center" size="4" maxlength="4" name="group_pic_size" value="'.$_POST['group_pic_size'].'"> KiB<br>
-                                    <span class="small">('.$admin_phrases['common']['zero_not_allowed'].')</span>
+                                    <span class="small">('.$FD->text('admin', 'zero_not_allowed').')</span>
                                 </td>
                             </tr>
                             <tr><td class="space"></td></tr>
                             <tr>
                                 <td class="buttontd" colspan="2">
                                     <button class="button_new" type="submit">
-                                        '.$admin_phrases['common']['arrow'].' '.$admin_phrases['common']['save_long'].'
+                                        '.$FD->text('admin', 'button_arrow').' '.$FD->text('admin', 'save_long').'
                                     </button>
                                 </td>
                             </tr>

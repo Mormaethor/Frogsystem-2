@@ -12,7 +12,7 @@
 class ConfigEnv extends ConfigData {
 
     // startup
-    public function startup() {
+    protected function startup() {
         global $sql, $spam, $path;
 
         // set env data
@@ -27,6 +27,7 @@ class ConfigEnv extends ConfigData {
         $this->setConfig('spam', $spam);
         $this->setConfig('data', $sql->getDatabaseName());
         $this->setConfig('path', $path);
+        $this->setConfig('slash', SLASH);
     }
 }
 ?>

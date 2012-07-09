@@ -2,27 +2,73 @@
 ///////////////////////////////
 //// start pseudo cronjobs ////
 ///////////////////////////////
-function daily_cronjobs ($time = null, $save_time = true) {
+function run_cronjobs ($time = null, $save_time = true) {
     global $FD;
     
     // set now
     if (empty($time))
         $time = $FD->env('time');
         
-    // make 3am
+    // calc 3am
     $today_3am = mktime(3, 0, 0, date('m', $time), date ('d', $time), date ('Y', $time));
-    $today_3am = ($today_3am > $FD->cfg('time')) ? $today_3am - 24*60*60 : $today_3am;
+    $today_3am = ($today_3am > $FD->cfg('time')) ? $today_3am - 24*60*60 : $today_3am;    
     
-    // Run Cronjobs or nt
-    if ($FD->cfg('cronjobs', 'last_cronjob_time') < $today_3am) {
-        delete_old_randoms();
-        search_index();  
-        clean_referers();
-        
-        if ($save_time)
-            $FD->saveConfig('cronjobs', array('last_cronjob_time' => $time));
-    }
+    // calc next hour
+    $last_hour = $time-(date('i', $time)*60)-date('s', $time); // now - min and sec of this hour
+    
+    // Run Cronjobs or not
+    if ($FD->cfg('cronjobs', 'last_cronjob_time_daily') < $today_3am)
+        cronjobs_daily($time);
+    if ($FD->cfg('cronjobs', 'last_cronjob_time_hourly') < $last_hour)
+        cronjobs_hourly($time);
+    if (($FD->cfg('cronjobs', 'last_cronjob_time')+5*60) < $time)
+        cronjobs_instantly_bufferd($time);
 }
+
+////////////////////////
+//// daily cronjobs ////
+////////////////////////
+function cronjobs_daily ($save_time = null) {
+    global $FD;
+    
+    // Run Cronjobs
+    search_index();  
+    clean_referers();
+    HashMapper::deleteByTime();
+    
+    // save time
+    if (!empty($save_time))
+        $FD->saveConfig('cronjobs', array('last_cronjob_time_daily' => $save_time));    
+}
+
+/////////////////////////
+//// hourly cronjobs ////
+/////////////////////////
+function cronjobs_hourly ($save_time = null) {
+    global $FD;
+    
+    // Run Cronjobs
+    
+    // save time
+    if (!empty($save_time))
+        $FD->saveConfig('cronjobs', array('last_cronjob_time_hourly' => $save_time));  
+}
+
+/////////////////////////////////////////
+//// instant tasks, bufferd for 5min ////
+/////////////////////////////////////////
+function cronjobs_instantly_bufferd ($save_time = null) {
+    global $FD;
+    
+    // Run Cronjobs
+    clean_iplist();
+    clean_timed_preview_images();
+    
+    // save time
+    if (!empty($save_time))
+        $FD->saveConfig('cronjobs', array('last_cronjob_time' => $save_time)); 
+}
+
 
 //////////////////////////////////////
 //// clean up referrers by config ////
@@ -77,7 +123,7 @@ function search_index ()
 ///////////////////////////
 function get_maintemplate ($BODY, $PATH_PREFIX = '', $BASE = FALSE)
 {
-    global $global_config_arr, $TEXT;
+    global $FD;
 
     // Load Template Object
     $theTemplate = new template();
@@ -94,8 +140,8 @@ function get_maintemplate ($BODY, $PATH_PREFIX = '', $BASE = FALSE)
 	$template_title = get_title();
 
     // Create Link-Lines
-    $template_favicon = ($global_config_arr['show_favicon'] == 1) ? '<link rel="shortcut icon" href="'.$PATH_PREFIX .'styles/'.$global_config_arr['style'].'/icons/favicon.ico">' : '';
-	$template_feed = '<link rel="alternate" type="application/rss+xml" href="'.$PATH_PREFIX .'feeds/'.$global_config_arr['feed'].'.php" title="'.$global_config_arr['title'].' '.$TEXT['frontend']->get("news_feed").'">';
+    $template_favicon = ($FD->config('show_favicon') == 1) ? '<link rel="shortcut icon" href="'.$PATH_PREFIX .'styles/'.$FD->config('style').'/icons/favicon.ico">' : '';
+	$template_feed = '<link rel="alternate" type="application/rss+xml" href="'.$PATH_PREFIX .'feeds/'.$FD->config('feed').'.php" title="'.$FD->config('title').' '.$FD->text('frontend', 'news_feed').'">';
 
     // Create Script-Lines
     $template_javascript = get_js($PATH_PREFIX).'
@@ -108,7 +154,7 @@ function get_maintemplate ($BODY, $PATH_PREFIX = '', $BASE = FALSE)
     // Get HTML-Matrix
     $theTemplate->load('MATRIX');
     $theTemplate->tag('doctype', $template_doctype);
-    $theTemplate->tag('language', $global_config_arr['language']);
+    $theTemplate->tag('language', $FD->config('language'));
     $theTemplate->tag('base_tag', $template_base);
     $theTemplate->tag('title', $template_title);
     $theTemplate->tag('title_tag', '<title>'.$template_title.'</title>');
@@ -134,11 +180,11 @@ function get_maintemplate ($BODY, $PATH_PREFIX = '', $BASE = FALSE)
 ///////////////////////
 function get_css ($PATH_PREFIX)
 {
-    global $global_config_arr;
+    global $FD;
 
     // Get List of CSS-Files
-    $search_path =  FS2_ROOT_PATH . 'styles/' . $global_config_arr['style'];
-    $link_path =  $PATH_PREFIX . 'styles/' . $global_config_arr['style'];
+    $search_path =  FS2_ROOT_PATH . 'styles/' . $FD->config('style');
+    $link_path =  $PATH_PREFIX . 'styles/' . $FD->config('style');
     $files = scandir_ext($search_path, 'css');
 
     // Filter Go-CSS-Files
@@ -177,7 +223,7 @@ function get_css ($PATH_PREFIX)
     }
 
     // Go-CSS-Files
-    $go_css = 'go_'.$global_config_arr['goto'].'.css';
+    $go_css = 'go_'.$FD->config('goto').'.css';
     if ( in_array ( $go_css, $files_go_css ) ) {
         $template_css .= '
                 <link rel="stylesheet" type="text/css" href="'. $link_path . '/' . $go_css .'">';
@@ -192,11 +238,11 @@ function get_css ($PATH_PREFIX)
 ///////////////////////
 function get_js ($PATH_PREFIX)
 {
-    global $global_config_arr;
+    global $FD;
 
     // Get List of JS-Files
-    $search_path =  FS2_ROOT_PATH . 'styles/' . $global_config_arr['style'];
-    $link_path =  $PATH_PREFIX . 'styles/' . $global_config_arr['style'];
+    $search_path =  FS2_ROOT_PATH . 'styles/' . $FD->config('style');
+    $link_path =  $PATH_PREFIX . 'styles/' . $FD->config('style');
     $files = scandir_ext($search_path, 'js');
 
     // Get Go-JS-Files
@@ -218,7 +264,7 @@ function get_js ($PATH_PREFIX)
     }
 
     // Go-JS-Files
-    $go_js = "go_".$global_config_arr['goto'].'.js';
+    $go_js = 'go_'.$FD->config('goto').'.js';
     if (in_array($go_js, $files_go_js)) {
         $template_js .= '
                 <script type="text/javascript" src="'. $link_path . "/" . $go_js .'"></script>';
@@ -233,9 +279,9 @@ function get_js ($PATH_PREFIX)
 ///////////////////////
 function get_meta ()
 {
-    global $global_config_arr;
+    global $FD;
 
-    $keyword_arr = explode(',', $global_config_arr['keywords']);
+    $keyword_arr = explode(',', $FD->config('keywords'));
     foreach ($keyword_arr as $key => $value) {
         $keyword_arr[$key] = trim($value);
     }
@@ -244,23 +290,23 @@ function get_meta ()
     $template = '
     <meta name="title" content="'.get_title().'">
     '.get_meta_author().'
-    <meta name="publisher" content="'.$global_config_arr['publisher'].'">
-    <meta name="copyright" content="'.$global_config_arr['copyright'].'">
+    <meta name="publisher" content="'.$FD->config('publisher').'">
+    <meta name="copyright" content="'.$FD->config('copyright').'">
     <meta name="generator" content="Frogsystem 2 [http://www.frogsystem.de]">
-    <meta name="description" content="'.$global_config_arr['description'].'">
+    <meta name="description" content="'.$FD->config('description').'">
     '.get_meta_abstract().'
-    <meta http-equiv="content-language" content="'.$global_config_arr['language'].'">
+    <meta http-equiv="content-language" content="'.$FD->config('language').'">
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <meta name="robots" content="index,follow">
     <meta name="Revisit-after" content="3 days">
     <meta name="DC.Title" content="'.get_title().'">
     '.get_meta_author(TRUE).'
-    <meta name="DC.Rights" content="'.$global_config_arr['copyright'].'">
-    <meta name="DC.Publisher" content="'.$global_config_arr['publisher'].'">
-    <meta name="DC.Description" content="'.$global_config_arr['description'].'">
-    <meta name="DC.Language" content="'.$global_config_arr['language'].'">
+    <meta name="DC.Rights" content="'.$FD->config('copyright').'">
+    <meta name="DC.Publisher" content="'.$FD->config('publisher').'">
+    <meta name="DC.Description" content="'.$FD->config('description').'">
+    <meta name="DC.Language" content="'.$FD->config('language').'">
     <meta name="DC.Format" content="text/html">
-    <meta name="keywords" lang="'.$global_config_arr['language'].'" content="'.$keywords.'">
+    <meta name="keywords" lang="'.$FD->config('language').'" content="'.$keywords.'">
     '.get_canonical().'
     ';
 
@@ -288,12 +334,12 @@ function get_title ()
 /////////////////////////////
 function get_meta_author ($DC = FALSE)
 {
-    global $global_config_arr;
+    global $FD;
 
-    if (isset($global_config_arr['content_author']) && $global_config_arr['content_author'] != "")
-        $author = $global_config_arr['content_author'];
+    if ($FD->configExists('content_author') && $FD->config('content_author') != '')
+        $author = $FD->config('content_author');
     else
-        $author = $global_config_arr['publisher'];
+        $author = $FD->config('publisher');
 
     if ($DC)
         $output = '<meta name="DC.Creator" content="'.$author.'">';
@@ -308,12 +354,12 @@ function get_meta_author ($DC = FALSE)
 /////////////////////////////
 function get_meta_abstract ()
 {
-    global $global_config_arr;
+    global $FD;
 
-    if (isset($global_config_arr['content_abstract']) && $global_config_arr['content_abstract'] != '') {
-        return '<meta name="abstract" content="'.$global_config_arr['content_abstract'].'">';
+    if ($FD->configExists('content_abstract') && $FD->config('content_abstract') != '') {
+        return '<meta name="abstract" content="'.$FD->config('content_abstract').'">';
     } else {
-        return '<meta name="abstract" content="'.$global_config_arr['description'].'">';
+        return '<meta name="abstract" content="'.$FD->config('description').'">';
     }
 }
 
@@ -357,7 +403,7 @@ function get_canonical()
 /////////////////////
 function get_content ($GOTO)
 {
-    global $global_config_arr, $FD, $sql, $TEXT;
+    global $FD, $sql;
 
     // Display Content
     initstr($template);
@@ -386,7 +432,8 @@ function get_content ($GOTO)
 
         // 404-Error Page, no content found
         } else {
-            $global_config_arr['goto'] = '404';
+            $FD->setConfig('goto', '404');
+            $FD->setConfig('env', 'goto', '404');
             include(FS2_ROOT_PATH . 'data/404.php');
         }
     }
@@ -397,11 +444,11 @@ function get_content ($GOTO)
 
 
 ////////////////////////////////////
-//// Jnit Template Replacements ////
+//// Init Template Replacements ////
 ////////////////////////////////////
 function tpl_functions_init ($TEMPLATE)
 {
-    global $global_config_arr, $sql, $NAV, $APP, $FD;
+    global $sql, $NAV, $APP, $FD;
 
     // data arrays
     $NAV = array();
@@ -418,7 +465,7 @@ function tpl_functions_init ($TEMPLATE)
 ///////////////////////////////
 function tpl_functions ($TEMPLATE, $COUNT, $filter=array(), $loopend_escape = true)
 {
-    global $global_config_arr, $sql;
+    global $sql;
 
     // hardcoded functions
     // this is the only way atm
@@ -533,7 +580,7 @@ function get_all_tpl_functions()
 //////////////////////
 function load_applets()
 {
-    global $global_config_arr, $sql, $FD, $TEXT;
+    global $sql, $FD;
 
     // Load Applets from DB
     $applet_data = $sql->getData('applets', array('applet_include', 'applet_file', 'applet_output'), array('W' => '`applet_active` = 1'));
@@ -564,8 +611,7 @@ function load_applets()
 function load_an_applet($file, $output, $args) {
 
     global $FD;
-    global $global_config_arr, $sql, $TEXT;
-    global $FD;
+    global $sql;
 
     // Setup $SCRIPT Var
     unset($SCRIPT, $template);
@@ -601,7 +647,7 @@ function load_an_applet($file, $output, $args) {
 //////////////////////////
 function tpl_func_snippets($original, $main_argument, $other_arguments)
 {
-    global $SNP, $global_config_arr, $sql;
+    global $SNP, $sql;
 
     // Load Navigation on demand
     if (!isset($SNP[$main_argument])) {
@@ -610,7 +656,7 @@ function tpl_func_snippets($original, $main_argument, $other_arguments)
 
         // Snippet not found?
         if (empty($data)) {
-            //$data['snippet_text'] = "Error: Snippet not found!";
+            //$data['snippet_text'] = 'Error: Snippet not found!';
             $data['snippet_text'] = $original;
         }
 
@@ -627,7 +673,7 @@ function tpl_func_snippets($original, $main_argument, $other_arguments)
 /////////////////////////
 function tpl_func_applets($original, $main_argument, $other_arguments)
 {
-    global $APP, $global_config_arr, $sql, $FD, $TEXT;
+    global $APP, $sql, $FD;
 
     // Applet does not exists
     if (!isset($APP[$main_argument])) {
@@ -658,18 +704,18 @@ function tpl_func_applets($original, $main_argument, $other_arguments)
 /////////////////////////////
 function tpl_func_navigations($original, $main_argument, $other_arguments)
 {
-    global $NAV, $global_config_arr;
+    global $NAV, $FD;
 
     // Load Navigation on demand
     if (!isset($NAV[$main_argument])) {
         // Write navigation into Array
-        $STYLE_PATH = 'styles/'.$global_config_arr['style'].'/';
+        $STYLE_PATH = 'styles/'.$FD->config('style').'/';
         $ACCESS = new fileaccess();
         $template = $ACCESS->getFileData(FS2_ROOT_PATH.$STYLE_PATH.$main_argument);
 
         // File not found?
         if ($template === false) {
-            //$template = "Error: Navi File not found!";
+            //$template = 'Error: Navi File not found!';
             $template = $original;
         }
 
@@ -690,9 +736,9 @@ function tpl_func_globalvars($original, $main_argument, $other_arguments)
     // hardcoded list of global vars
     $var_data = array (
         'url'                           => $FD->cfg('virtualhost'),
-        'style_url'                     => $FD->cfg('virtualhost')."styles/".$FD->cfg('style')."/",
-        'style_images'                  => $FD->cfg('virtualhost')."styles/".$FD->cfg('style')."/images/",
-        'style_icons'                   => $FD->cfg('virtualhost')."styles/".$FD->cfg('style')."/icons/",
+        'style_url'                     => $FD->cfg('virtualhost').'styles/'.$FD->cfg('style').'/',
+        'style_images'                  => $FD->cfg('virtualhost').'styles/'.$FD->cfg('style').'/images/',
+        'style_icons'                   => $FD->cfg('virtualhost').'styles/'.$FD->cfg('style').'/icons/',
         'page_title'                    => $FD->cfg('title'),
         'page_dyn_title'                => get_title(),
         'date'                          => date_loc($FD->cfg('date'), $FD->cfg('env', 'date')),
@@ -701,7 +747,7 @@ function tpl_func_globalvars($original, $main_argument, $other_arguments)
     );
 
     //set error msg
-    //$error = "Error: Unknown global Var!";
+    //$error = 'Error: Unknown global Var!';
     $error = $original;
 
     //return var or false
@@ -840,7 +886,7 @@ function get_seo () {
     unset($_REQUEST['seoq']);
 
     // Expliziter Aufruf von index.php bzw. indexseo.php => Weiterleitung erzwingen
-    if ((!$calledbyrewrite) && (substr($_SERVER["REQUEST_URI"], -1) != '/')) {
+    if ((!$calledbyrewrite) && (substr($_SERVER['REQUEST_URI'], -1) != '/')) {
         $redirect = true;
     }
     // Bei Bedarf Weiterleitung auf die neue URL im richtigen Format
@@ -901,7 +947,7 @@ function get_goto ()
 /////////////////////////
 function forward_aliases ( $GOTO )
 {
-    global $global_config_arr, $FD;
+    global $FD;
 
     $aliases = $FD->sql()->getData(
         'aliases',
@@ -924,15 +970,13 @@ function forward_aliases ( $GOTO )
 function count_all ( $GOTO )
 {
     global $FD;
-    global $global_config_arr;
 
     $hit_year = date ( 'Y' );
     $hit_month = date ( 'm' );
     $hit_day = date ( 'd' );
 
     visit_day_exists ( $hit_year, $hit_month, $hit_day );
-        count_hit ( $GOTO );
-        count_visit ( $GOTO );
+    count_hit ( $GOTO );
 }
 
 ///////////////////////////////////
@@ -941,17 +985,15 @@ function count_all ( $GOTO )
 function visit_day_exists ( $YEAR, $MONTH, $DAY )
 {
     global $FD;
-    global $global_config_arr;
 
     // check if visit-day exists
-    $daycounter = mysql_query ('SELECT * FROM '.$global_config_arr['pref'].'counter_stat
+    $daycounter = mysql_query ('SELECT * FROM '.$FD->config('pref').'counter_stat
                                 WHERE s_year = '.$YEAR.' AND s_month = '.$MONTH.' AND s_day = '.$DAY, $FD->sql()->conn() );
 
     $rows = mysql_num_rows ( $daycounter );
 
     if ( $rows <= 0 ) {
-        mysql_query('INSERT INTO '.$global_config_arr['pref']."counter_stat (s_year, s_month, s_day, s_visits, s_hits) VALUES ('".$YEAR."', '".$MONTH."', '".$DAY."', '0', '0')", $FD->sql()->conn() );
-        mysql_query('DELETE FROM '.$global_config_arr['pref'].'iplist', $FD->sql()->conn() );
+        mysql_query('INSERT INTO '.$FD->config('pref')."counter_stat (s_year, s_month, s_day, s_visits, s_hits) VALUES ('".$YEAR."', '".$MONTH."', '".$DAY."', '0', '0')", $FD->sql()->conn() );
     }
 }
 
@@ -962,7 +1004,6 @@ function visit_day_exists ( $YEAR, $MONTH, $DAY )
 function count_hit ( $GOTO )
 {
     global $FD;
-    global $global_config_arr;
 
     $hit_year = date ( 'Y' );
     $hit_month = date ( 'm' );
@@ -970,8 +1011,8 @@ function count_hit ( $GOTO )
 
         if ( $GOTO != '404' && $GOTO != '403' ) {
                 // count page_hits
-            mysql_query ( 'UPDATE '.$global_config_arr['pref'].'counter SET hits = hits + 1', $FD->sql()->conn() );
-            mysql_query ( 'UPDATE '.$global_config_arr['pref'].'counter_stat
+            mysql_query ( 'UPDATE '.$FD->config('pref').'counter SET hits = hits + 1', $FD->sql()->conn() );
+            mysql_query ( 'UPDATE '.$FD->config('pref').'counter_stat
                            SET s_hits = s_hits + 1
                            WHERE s_year = '.$hit_year.' AND s_month = '.$hit_month.' AND s_day = '.$hit_day, $FD->sql()->conn() );
         }
@@ -981,30 +1022,18 @@ function count_hit ( $GOTO )
 /////////////////////
 //// count visit ////
 /////////////////////
-function count_visit ( $GOTO )
+function count_visit ()
 {
     global $FD;
-    global $global_config_arr;
 
-    $time = time ();             // timestamp
-    $counttime = '86400';       // time to save IPs (1 day = 86400)
     $visit_year = date ( 'Y' );
     $visit_month = date( 'm' );
     $visit_day = date ( 'd' );
 
-        // check if errorpage
-        if ( $GOTO != '404' && $GOTO != '403' ) {
-                // save IP & visit
-            $index = mysql_query ( 'SELECT * FROM '.$global_config_arr['pref']."iplist WHERE ip = '".savesql($_SERVER['REMOTE_ADDR'])."'", $FD->sql()->conn() );
-
-            if ( mysql_num_rows ( $index ) <= 0 ) {
-                mysql_query ( 'UPDATE '.$global_config_arr['pref'].'counter SET visits = visits + 1', $FD->sql()->conn() );
-                mysql_query ( 'UPDATE '.$global_config_arr['pref'].'counter_stat
-                               SET s_visits = s_visits + 1
-                               WHERE s_year = '.$visit_year.' AND s_month = '.$visit_month.' AND s_day = '.$visit_day, $FD->sql()->conn() );
-                mysql_query ( 'INSERT INTO '.$global_config_arr['pref']."iplist (`ip`) VALUES ('".savesql($_SERVER['REMOTE_ADDR'])."')", $FD->sql()->conn() );
-            }
-        }
+    mysql_query('UPDATE '.$FD->config('pref').'counter SET visits = visits + 1', $FD->sql()->conn() );
+    mysql_query('UPDATE '.$FD->config('pref').'counter_stat
+                    SET s_visits = s_visits + 1
+                    WHERE s_year = '.$visit_year.' AND s_month = '.$visit_month.' AND s_day = '.$visit_day, $FD->sql()->conn() );
 }
 
 
@@ -1014,34 +1043,53 @@ function count_visit ( $GOTO )
 function save_visitors ()
 {
     global $FD;
-    global $global_config_arr;
 
-    $time = time(); // timestamp
     $ip = savesql($_SERVER['REMOTE_ADDR']); // IP-Adress
 
-        // get user_id or set user_id=0
-        if ( isset ( $_SESSION['user_id'] ) && $_SESSION['user_level'] == 'loggedin' ) {
-            $user_id = $_SESSION['user_id'];
-            settype ( $user_id, 'integer');
-        } else {
-            $user_id = 0;
-        }
-
-    // delete offline users
-    mysql_query ( 'DELETE FROM '.$global_config_arr['pref'].'useronline WHERE date < ('.$time.' - 300)', $FD->sql()->conn() );
-
-    // save online users
-    $index = mysql_query ( 'SELECT * FROM '.$global_config_arr['pref']."useronline WHERE ip='".$ip."'", $FD->sql()->conn() );
-
-        // update existing users
-        if ( mysql_num_rows ( $index ) >= 1 && mysql_result ( $index, 0, 'user_id' ) != $user_id ) {
-        mysql_query ( 'UPDATE '.$global_config_arr['pref']."useronline SET user_id = '".$user_id."' WHERE ip = '".$ip."'", $FD->sql()->conn() );
-    }
-        if ( mysql_num_rows ( $index ) >= 1 ) {
-        mysql_query ( 'UPDATE '.$global_config_arr['pref']."useronline SET date = '".$time."' WHERE ip='".$ip."'", $FD->sql()->conn() );
+    // get user_id or set user_id=0
+    if (is_loggedin() && isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
+        settype($user_id, 'integer');
     } else {
-        mysql_query ( 'INSERT INTO '.$global_config_arr['pref']."useronline (ip, user_id, date) VALUES ('".$ip."', '".$user_id."', '".$time."')", $FD->sql()->conn() );
+        $user_id = 0;
     }
+
+    // Exisiting user for ip?    
+    $user = $FD->sql()->getRow('useronline', '*', array('W' => "`ip` = '".$ip."'"));
+
+    // no user => create new
+    if (empty($user)) {
+        $FD->sql()->insert('useronline', array(
+            'ip' => $ip,
+            'user_id' => $user_id,
+            'date' => $FD->env('time')
+        ));
+        
+        // and count the visit
+        count_visit();
+    }
+    
+    // new user_id (and update time)
+    else if ($user['user_id'] != $user_id) {
+        $FD->sql()->update('useronline', array('user_id' => $user_id, 'date' => $FD->env('time') ), array('W' => "`ip` = '".$ip."'"));
+    }
+    
+    // we know the user => just update time
+    else {
+        $FD->sql()->update('useronline', array('date' => $FD->env('time') ), array('W' => "`ip` = '".$ip."'"));
+    }
+}
+
+//////////////////////
+//// clean iplist ////
+//////////////////////
+function clean_iplist()
+{
+    global $FD;
+
+    $counttime = '86400';       // time to save IPs (1 day = 86400)
+    $time = $FD->env('time') - $counttime;
+    $FD->sql()->delete('useronline', array('W' => "`date` <= '".$time."'"));
 }
 
 
@@ -1051,7 +1099,6 @@ function save_visitors ()
 function save_referer ()
 {
     global $FD;
-    global $global_config_arr;
 
 	if (isset($_SERVER['HTTP_REFERER'])) {
 
@@ -1059,35 +1106,33 @@ function save_referer ()
 		// save referer
 		$referer = preg_replace ( "=(.*?)\=([0-9a-z]{32})(.*?)=i", "\\1=\\3", $_SERVER['HTTP_REFERER'] );
 		$referer = savesql($referer);
-		$index =  mysql_query ( 'SELECT * FROM '.$global_config_arr['pref']."counter_ref WHERE ref_url = '".$referer."'", $FD->sql()->conn() );
+		$index =  mysql_query ( 'SELECT * FROM '.$FD->config('pref')."counter_ref WHERE ref_url = '".$referer."'", $FD->sql()->conn() );
 
 		if ( mysql_num_rows ( $index ) <= 0 ) {
-			if ( substr_count ( $referer, 'http://' ) >= 1 && substr_count ( $referer, $global_config_arr['virtualhost'] ) < 1 ) {
-				mysql_query ( 'INSERT INTO '.$global_config_arr['pref']."counter_ref (ref_url, ref_count, ref_first, ref_last) VALUES ('".$referer."', '1', '".$time."', '".$time."')", $FD->sql()->conn() );
+			if ( substr_count ( $referer, 'http://' ) >= 1 && substr_count ( $referer, $FD->config('virtualhost') ) < 1 ) {
+				mysql_query ( 'INSERT INTO '.$FD->config('pref')."counter_ref (ref_url, ref_count, ref_first, ref_last) VALUES ('".$referer."', '1', '".$time."', '".$time."')", $FD->sql()->conn() );
 			}
 		} else {
-			if ( substr_count ( $referer, 'http://' ) >= 1 && substr_count ( $referer, $global_config_arr['virtualhost'] ) < 1 ) {
-					mysql_query ( 'UPDATE '.$global_config_arr['pref']."counter_ref SET ref_count = ref_count + 1, ref_last = '".$time."' WHERE ref_url = '".$referer."'", $FD->sql()->conn() );
+			if ( substr_count ( $referer, 'http://' ) >= 1 && substr_count ( $referer, $FD->config('virtualhost') ) < 1 ) {
+					mysql_query ( 'UPDATE '.$FD->config('pref')."counter_ref SET ref_count = ref_count + 1, ref_last = '".$time."' WHERE ref_url = '".$referer."'", $FD->sql()->conn() );
 			}
 		}
 	}
 }
 
 
-///////////////////////////////
-//// del old timed randoms ////
-///////////////////////////////
-function delete_old_randoms ()
-{
-  global $FD;
+//////////////////////////////////////////////////////////
+//// clean database from expired timed preview_images ////
+//////////////////////////////////////////////////////////
+function clean_timed_preview_images () {
+    global $FD;
+    $FD->loadConfig('preview_images');
 
-  //~ if ($global_config_arr['random_timed_deltime'] != -1) {
-    //~ // Alte Zufallsbild-Einträge aus der Datenbank entfernen
-    //~ mysql_query('DELETE a
-                //~ FROM '.$global_config_arr['pref'].'screen_random a, '.$global_config_arr['pref'].'global_config b
-                //~ WHERE a.end < UNIX_TIMESTAMP()-b.random_timed_deltime', $FD->sql()->conn() );
-  //~ }
-  //TODO rewrite preview image module
+    // do we want to remove old entries?
+    if ($FD->config('preview_images', 'random_timed_deltime') != -1) {
+        // remove old entries
+        $FD->sql()->delete('screen_random', array('W' => "`end` < '".($FD->env('time')-$FD->config('preview_images', 'random_timed_deltime'))."'"));
+    }
 }
 
 
@@ -1106,34 +1151,33 @@ function get_copyright ()
 function set_style ()
 {
     global $FD;
-    global $global_config_arr;
 
     if ( isset ( $_GET['style'] ) && $FD->cfg('allow_other_designs') == 1 ) {
         $index = mysql_query ( '
                                 SELECT `style_id`, `style_tag`
-                                FROM `'.$global_config_arr['pref']."styles`
+                                FROM `'.$FD->config('pref')."styles`
                                 WHERE `style_tag` = '".savesql ( $_GET['style'] )."'
                                 AND `style_allow_use` = 1
                                 LIMIT 0,1
         ", $FD->sql()->conn() );
         if ( mysql_num_rows ( $index ) == 1 ) {
-            $global_config_arr['style'] = stripslashes ( mysql_result($index, 0, 'style_tag') );
-            $global_config_arr['style_tag'] = stripslashes ( mysql_result($index, 0, 'style_tag') );
-            $global_config_arr['style_id'] = mysql_result($index, 0, 'style_id');
+            $FD->setConfig('style', stripslashes ( mysql_result($index, 0, 'style_tag') ) );
+            $FD->setConfig('style_tag', stripslashes ( mysql_result($index, 0, 'style_tag') ) );
+            $FD->setConfig('style_id', mysql_result($index, 0, 'style_id') );
         }
-    } elseif ( isset ( $_GET['style_id'] ) && $global_config_arr['allow_other_designs'] == 1 ) {
+    } elseif ( isset ( $_GET['style_id'] ) && $FD->config('allow_other_designs') == 1 ) {
         settype ( $_GET['style_id'], 'integer' );
         $index = mysql_query ( '
                                 SELECT `style_id`, `style_tag`
-                                FROM `'.$global_config_arr['pref']."styles`
+                                FROM `'.$FD->config('pref')."styles`
                                 WHERE `style_id` = '".$_GET['style_id']."'
                                 AND `style_allow_use` = 1
                                 LIMIT 0,1
         ", $FD->sql()->conn() );
         if ( mysql_num_rows ( $index ) == 1 ) {
-            $global_config_arr['style'] = stripslashes ( mysql_result($index, 0, 'style_tag') );
-            $global_config_arr['style_tag'] = stripslashes ( mysql_result($index, 0, 'style_tag') );
-            $global_config_arr['style_id'] = mysql_result($index, 0, 'style_id');
+            $FD->setConfig('style', stripslashes ( mysql_result($index, 0, 'style_tag') ) );
+            $FD->setConfig('style_tag', stripslashes ( mysql_result($index, 0, 'style_tag') ) );
+            $FD->setConfig('style_id', mysql_result($index, 0, 'style_id') );
         }
     }
     copyright ();
@@ -1144,7 +1188,7 @@ function set_style ()
 //////////////////////////////////
 function copyright ()
 {
-    global $global_config_arr;
+    global $FD;
 
     $template_copyright = new template();
     $template_copyright->setFile('0_main.tpl');
@@ -1155,13 +1199,13 @@ function copyright ()
         || strpos(get_copyright(), 'Frogsystem&nbsp;2' ) == FALSE || strpos(get_copyright(), '&copy; 2007 - 2011 Frogsystem-Team') == FALSE
         || strpos(get_copyright(), 'Powered by' ) == FALSE || strpos(get_copyright(), 'frogsystem.de') == FALSE )
     {
-        $global_config_arr['style'] =  'default';
-        $global_config_arr['style_id'] =  0;
+        $FD->setConfig('style',  'default');
+        $FD->setConfig('style_id', 0);
     } else {
         $copyright_without_comments = preg_replace("/<!\s*--.*?--\s*>/s", "", $copyright);
         if (preg_match("/\{\.\.copyright\.\.\}/", $copyright_without_comments) <= 0) {
-            $global_config_arr['style'] =  'default';
-            $global_config_arr['style_id'] =  0;
+            $FD->setConfig('style', 'default');
+            $FD->setConfig('style_id', 0);
         }
     }
 }

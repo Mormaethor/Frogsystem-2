@@ -1,29 +1,18 @@
-<?php if ( ACP_GO === 'start_general' ) {
+<?php if (!defined('ACP_GO')) die('Unauthorized access!');
 
 // Online since
 $online_since = $sql->getRow('counter_stat', array('s_year', 's_month', 's_day'), array('O' => '`s_year`, `s_month`, `s_day`'));
-$online_since = date_loc($global_config_arr['date'], strtotime($online_since['s_year'].'-'.$online_since['s_month'].'-'.$online_since['s_day']));
+$online_since = date_loc($FD->config('date'), strtotime($online_since['s_year'].'-'.$online_since['s_month'].'-'.$online_since['s_day']));
 
 // Total
 $total = $sql->getRow('counter', array('visits', 'hits'));
 
 // Today
-$today = $sql->getRow('counter_stat', array('s_hits', 's_visits'), array('W' => "`s_year` = '".$global_config_arr['env']['year']."' AND `s_month` = '".(int) $global_config_arr['env']['month']."' AND `s_day` = '".(int) $global_config_arr['env']['day']."'"));
+$today = $sql->getRow('counter_stat', array('s_hits', 's_visits'), array('W' => "`s_year` = '".$FD->env('year')."' AND `s_month` = '".(int) $FD->env('month')."' AND `s_day` = '".(int) $FD->env('day')."'"));
 
 
-// Visitors online
-$online['visitors'] = $sql->getField(
-    'useronline',
-    array('COL' => 'user_id', 'FUNC' => 'COUNT', 'AS' => 'visitors_on')
-);
-
-
-// Users online
-$index = $sql->doQuery('SELECT count(user_id) AS user_on FROM {..pref..}useronline WHERE user_id != 0');
-$online['users'] = mysql_result($index, 0, 'user_on');
-
-// Guests online
-$online['guests'] = $online['visitors'] - $online['users'];
+// Any users online
+$online = get_online_ips();
 
 // Referrer Num
 $index = $sql->doQuery("SELECT COUNT(`ref_url`) AS 'ref_num' FROM {..pref..}counter_ref");
@@ -35,7 +24,7 @@ if ($ref['num'] > 0) {
 	$ref['url'] = stripslashes(mysql_result($index, 0, 'ref_url'));
 	$ref['shorturl'] = cut_in_string($ref['url'], 50, '...');
 
-	$ref['date_time'] = date_loc($TEXT['admin']->get('date_time'), mysql_result($index, 0, 'ref_last'));
+	$ref['date_time'] = date_loc($FD->text('admin', 'date_time'), mysql_result($index, 0, 'ref_last'));
 }
 
 // Conditions
@@ -45,10 +34,10 @@ $adminpage->addCond('wurst', false);
 $adminpage->addCond('thomas', false);
 
 // Values
-$adminpage->addText('title', $global_config_arr['title']);
-$adminpage->addText('url', $global_config_arr['virtualhost']);
+$adminpage->addText('title', $FD->config('title'));
+$adminpage->addText('url', $FD->config('virtualhost'));
 $adminpage->addText('online_since', $online_since);
-$adminpage->addText('online_visitors', $online['visitors']);
+$adminpage->addText('online_visitors', $online['all']);
 $adminpage->addText('online_guests', $online['guests']);
 $adminpage->addText('online_registered', $online['users']);
 $adminpage->addText('visits_total', $total['visits']);
@@ -62,4 +51,4 @@ $adminpage->addText('ref_date', $ref['date_time']);
 
 echo $adminpage->get('main');
 
-} ?>
+?>

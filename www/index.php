@@ -17,20 +17,16 @@ require_once(FS2_ROOT_PATH . 'includes/imagefunctions.php');
 require_once(FS2_ROOT_PATH . 'includes/indexfunctions.php');
 
 
-// Load Text TODO: remove backwards compatibiliy
-$TEXT['frontend'] = $FD->getOldTetxt();
-
-
 // Constructor Calls
 // TODO: "Constructor Hook"
 get_goto();
 setTimezone($FD->cfg('timezone'));
-daily_cronjobs();
+run_cronjobs();
+save_visitors();
 count_all($FD->cfg('goto'));
 if (!$FD->configExists('main', 'count_referers') || $FD->cfg('main', 'count_referers')==1) {
   save_referer();
 }
-save_visitors();
 set_style();
 copyright();
 

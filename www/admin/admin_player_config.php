@@ -1,29 +1,35 @@
-<?php
+<?php if (!defined('ACP_GO')) die('Unauthorized access!');
+
+###################
+## Page Settings ##
+###################
+$used_cols = array('cfg_player_x', 'cfg_player_y', 'cfg_autoplay', 'cfg_autoload', 'cfg_buffer', 'cfg_buffermessage', 'cfg_buffercolor', 'cfg_bufferbgcolor', 'cfg_buffershowbg', 'cfg_titlesize', 'cfg_titlecolor', 'cfg_margin', 'cfg_showstop', 'cfg_showvolume', 'cfg_showtime', 'cfg_showplayer', 'cfg_showloading', 'cfg_showfullscreen', 'cfg_showmouse', 'cfg_loop', 'cfg_playercolor', 'cfg_loadingcolor', 'cfg_bgcolor', 'cfg_bgcolor1', 'cfg_bgcolor2', 'cfg_buttoncolor', 'cfg_buttonovercolor', 'cfg_slidercolor1', 'cfg_slidercolor2', 'cfg_sliderovercolor', 'cfg_loadonstop',  'cfg_onclick', 'cfg_ondoubleclick', 'cfg_playertimeout', 'cfg_videobgcolor', 'cfg_volume', 'cfg_shortcut', 'cfg_playeralpha', 'cfg_top1_url', 'cfg_top1_x', 'cfg_top1_y', 'cfg_showiconplay', 'cfg_iconplaycolor', 'cfg_iconplaybgcolor', 'cfg_iconplaybgalpha', 'cfg_showtitleandstartimage');
+
 ///////////////////////
 //// Update Config ////
 ///////////////////////
 
 if (
 		isset($_POST['cfg_videobgcolor']) && $_POST['cfg_videobgcolor'] != ''
-		&& $_POST['cfg_bgcolor2'] && $_POST['cfg_bgcolor2'] != ''
-		&& $_POST['cfg_bgcolor'] && $_POST['cfg_bgcolor'] != ''
-		&& $_POST['cfg_showplayer'] && $_POST['cfg_showplayer'] != ''
-		&& $_POST['cfg_showloading'] && $_POST['cfg_showloading'] != ''
-		&& $_POST['cfg_playercolor'] && $_POST['cfg_playercolor'] != ''
-		&& $_POST['cfg_loadingcolor'] && $_POST['cfg_loadingcolor'] != ''
-		&& $_POST['cfg_buttoncolor'] && $_POST['cfg_buttoncolor'] != ''
-		&& $_POST['cfg_buttonovercolor'] && $_POST['cfg_buttonovercolor'] != ''
-		&& $_POST['cfg_slidercolor1'] && $_POST['cfg_slidercolor1'] != ''
-		&& $_POST['cfg_slidercolor2'] && $_POST['cfg_slidercolor2'] != ''
-		&& $_POST['cfg_sliderovercolor'] && $_POST['cfg_sliderovercolor'] != ''
-		&& $_POST['cfg_buffercolor'] && $_POST['cfg_buffercolor'] != ''
-		&& $_POST['cfg_bufferbgcolor'] && $_POST['cfg_bufferbgcolor'] != ''
-		&& $_POST['cfg_titlecolor'] && $_POST['cfg_titlecolor'] != ''
-		&& $_POST['cfg_onclick'] && $_POST['cfg_onclick'] != ''
-		&& $_POST['cfg_ondoubleclick'] && $_POST['cfg_ondoubleclick'] != ''
-		&& $_POST['cfg_showmouse'] && $_POST['cfg_showmouse'] != ''
-		&& $_POST['cfg_iconplaycolor'] && $_POST['cfg_iconplaycolor'] != ''
-		&& $_POST['cfg_iconplaybgcolor'] && $_POST['cfg_iconplaybgcolor'] != ''
+		&& isset($_POST['cfg_bgcolor2']) && $_POST['cfg_bgcolor2'] != ''
+		&& isset($_POST['cfg_bgcolor']) && $_POST['cfg_bgcolor'] != ''
+		&& isset($_POST['cfg_showplayer']) && $_POST['cfg_showplayer'] != ''
+		&& isset($_POST['cfg_showloading']) && $_POST['cfg_showloading'] != ''
+		&& isset($_POST['cfg_playercolor']) && $_POST['cfg_playercolor'] != ''
+		&& isset($_POST['cfg_loadingcolor']) && $_POST['cfg_loadingcolor'] != ''
+		&& isset($_POST['cfg_buttoncolor']) && $_POST['cfg_buttoncolor'] != ''
+		&& isset($_POST['cfg_buttonovercolor']) && $_POST['cfg_buttonovercolor'] != ''
+		&& isset($_POST['cfg_slidercolor1']) && $_POST['cfg_slidercolor1'] != ''
+		&& isset($_POST['cfg_slidercolor2']) && $_POST['cfg_slidercolor2'] != ''
+		&& isset($_POST['cfg_sliderovercolor']) && $_POST['cfg_sliderovercolor'] != ''
+		&& isset($_POST['cfg_buffercolor']) && $_POST['cfg_buffercolor'] != ''
+		&& isset($_POST['cfg_bufferbgcolor']) && $_POST['cfg_bufferbgcolor'] != ''
+		&& isset($_POST['cfg_titlecolor']) && $_POST['cfg_titlecolor'] != ''
+		&& isset($_POST['cfg_onclick']) && $_POST['cfg_onclick'] != ''
+		&& isset($_POST['cfg_ondoubleclick']) && $_POST['cfg_ondoubleclick'] != ''
+		&& isset($_POST['cfg_showmouse']) && $_POST['cfg_showmouse'] != ''
+		&& isset($_POST['cfg_iconplaycolor']) && $_POST['cfg_iconplaycolor'] != ''
+		&& isset($_POST['cfg_iconplaybgcolor']) && $_POST['cfg_iconplaybgcolor'] != ''
 
 		&& isset ( $_POST['cfg_player_x'] ) && $_POST['cfg_player_x'] >= 0
 		&& isset ( $_POST['cfg_player_y'] ) && $_POST['cfg_player_y'] >= 0
@@ -86,65 +92,23 @@ if (
 	$_POST['cfg_iconplaybgcolor'] = savesql ( '#'.$_POST['cfg_iconplaybgcolor'] );
 	$_POST['cfg_top1_url'] = savesql ( $_POST['cfg_top1_url'] );
 
-	// MySQL-Queries
-    mysql_query ( "
-					UPDATE `".$global_config_arr['pref']."player_config`
-					SET
-						`cfg_player_x` = '".$_POST['cfg_player_x']."',
-						`cfg_player_y` = '".$_POST['cfg_player_y']."',
-						`cfg_loop` = '".$_POST['cfg_loop']."',
-						`cfg_autoplay` = '".$_POST['cfg_autoplay']."',
-						`cfg_autoload` = '".$_POST['cfg_autoload']."',
-						`cfg_volume` = '".$_POST['cfg_volume']."',
-						`cfg_margin` = '".$_POST['cfg_margin']."',
-						`cfg_showstop` = '".$_POST['cfg_showstop']."',
-						`cfg_showvolume` = '".$_POST['cfg_showvolume']."',
-						`cfg_showtime` = '".$_POST['cfg_showtime']."',
-						`cfg_playertimeout` = '".$_POST['cfg_playertimeout']."',
-						`cfg_showfullscreen` = '".$_POST['cfg_showfullscreen']."',
-						`cfg_playeralpha` = '".$_POST['cfg_playeralpha']."',
-						`cfg_buffer` = '".$_POST['cfg_buffer']."',
-						`cfg_buffershowbg` = '".$_POST['cfg_buffershowbg']."',
-						`cfg_titlesize` = '".$_POST['cfg_titlesize']."',
-						`cfg_shortcut` = '".$_POST['cfg_shortcut']."',
-						`cfg_showiconplay` = '".$_POST['cfg_showiconplay']."',
-						`cfg_showtitleandstartimage` = '".$_POST['cfg_showtitleandstartimage']."',
-						`cfg_iconplaybgalpha` = '".$_POST['cfg_iconplaybgalpha']."',
-						`cfg_top1_x` = '".$_POST['cfg_top1_x']."',
-						`cfg_top1_y` = '".$_POST['cfg_top1_y']."',
-						`cfg_loadonstop` = '".$_POST['cfg_loadonstop']."',
+    // prepare data
+    $data = frompost($used_cols);
 
-						`cfg_videobgcolor` = '".$_POST['cfg_videobgcolor']."',
-						`cfg_bgcolor1` = '".$_POST['cfg_bgcolor1']."',
-						`cfg_bgcolor2` = '".$_POST['cfg_bgcolor2']."',
-						`cfg_bgcolor` = '".$_POST['cfg_bgcolor']."',
-						`cfg_showplayer` = '".$_POST['cfg_showplayer']."',
-						`cfg_showloading` = '".$_POST['cfg_showloading']."',
-						`cfg_playercolor` = '".$_POST['cfg_playercolor']."',
-						`cfg_loadingcolor` = '".$_POST['cfg_loadingcolor']."',
-						`cfg_buttoncolor` = '".$_POST['cfg_buttoncolor']."',
-						`cfg_buttonovercolor` = '".$_POST['cfg_buttonovercolor']."',
-						`cfg_slidercolor1` = '".$_POST['cfg_slidercolor1']."',
-						`cfg_slidercolor2` = '".$_POST['cfg_slidercolor2']."',
-						`cfg_sliderovercolor` = '".$_POST['cfg_sliderovercolor']."',
-						`cfg_buffermessage` = '".$_POST['cfg_buffermessage']."',
-						`cfg_buffercolor` = '".$_POST['cfg_buffercolor']."',
-						`cfg_bufferbgcolor` = '".$_POST['cfg_bufferbgcolor']."',
-						`cfg_titlecolor` = '".$_POST['cfg_titlecolor']."',
-						`cfg_onclick` = '".$_POST['cfg_onclick']."',
-						`cfg_ondoubleclick` = '".$_POST['cfg_ondoubleclick']."',
-						`cfg_showmouse` = '".$_POST['cfg_showmouse']."',
-						`cfg_iconplaycolor` = '".$_POST['cfg_iconplaycolor']."',
-						`cfg_iconplaybgcolor` = '".$_POST['cfg_iconplaybgcolor']."',
-						`cfg_top1_url` = '".$_POST['cfg_top1_url']."'
-					WHERE `id` = '1'
-	", $FD->sql()->conn() );
-
-	// system messages
-    systext($admin_phrases['common']['changes_saved'], $admin_phrases['common']['info']);
+    // save config
+    try {
+        $FD->saveConfig('video_player', $data);
+        systext($FD->text('admin', 'config_saved'), $FD->text('admin', 'info'), 'green', $FD->text('admin', 'icon_save_ok'));
+    } catch (Exception $e) {
+        systext(
+            $FD->text('admin', 'config_not_saved').'<br>'.
+            (DEBUG ? $e->getMessage() : $FD->text('admin', 'unknown_error')),
+            $FD->text('admin', 'error'), 'red', $FD->text('admin', 'icon_save_error')
+        );        
+    }
 
     // Unset Vars
-    unset ( $_POST );
+    unset($_POST);
 }
 
 /////////////////////
@@ -155,17 +119,13 @@ if ( TRUE )
 {
 	// Display Error Messages
 	if ( isset ( $_POST['sended'] ) ) {
-		systext ( $admin_phrases['common']['note_notfilled'], $admin_phrases['common']['error'], TRUE );
+		systext ( $FD->text('admin', 'note_notfilled'), $FD->text('admin', 'error'), TRUE );
 
 	// Load Data from DB into Post
 	} else {
-	    $index = mysql_query ( '
-								SELECT *
-								FROM '.$global_config_arr['pref']."player_config
-								WHERE `id` = '1'
-		", $FD->sql()->conn() );
-	    $config_arr = mysql_fetch_assoc($index);
-	    putintopost ( $config_arr );
+        $data = $sql->getRow('config', array('config_data'), array('W' => "`config_name` = 'video_player'"));
+        $data = json_array_decode($data['config_data']);
+        putintopost($data);
 	}
 
 	// security functions
@@ -191,8 +151,8 @@ if ( TRUE )
                                 </td>
                                 <td class="config">
                                     <input class="text" size="5" name="cfg_player_x" value="'.$_POST['cfg_player_x'].'" maxlength="4">
-                                    '.$TEXT['admin']->get('resolution_x').'
-                                    <input class="text" size="5" name="cfg_player_y" value="'.$_POST['cfg_player_y'].'" maxlength="4"> '.$TEXT['admin']->get('pixel').'
+                                    '.$FD->text('admin', 'resolution_x').'
+                                    <input class="text" size="5" name="cfg_player_y" value="'.$_POST['cfg_player_y'].'" maxlength="4"> '.$FD->text('admin', 'pixel').'
                                 </td>
                             </tr>
        						<tr>
@@ -508,7 +468,7 @@ if ( TRUE )
        						</tr>
        						<tr>
            						<td class="config">
-               						Vorausspeicher-Nachricht: <span class="small">'.$admin_phrases['common']['optional'].'</span><br>
+               						Vorausspeicher-Nachricht: <span class="small">'.$FD->text("admin", "optional").'</span><br>
                						<span class="small">Nachricht, die w&auml;hrend des Vorausspeicherns angezeigt wird.</span>
            						</td>
            						<td class="config">
@@ -639,7 +599,7 @@ if ( TRUE )
 							<tr><td class="line" colspan="4">Bild-&Uuml;berlagerung</td></tr>
        						<tr>
            						<td class="config">
-               						Bild-URL: <span class="small">'.$admin_phrases['common']['optional'].'</span><br>
+               						Bild-URL: <span class="small">'.$FD->text("admin", "optional").'</span><br>
                						<span class="small">URL eines Bildes, das &uuml;ber das Video gelegt werden soll.</span>
            						</td>
            						<td class="config">
@@ -670,7 +630,7 @@ if ( TRUE )
                             <tr>
                                 <td class="buttontd" colspan="2">
                                     <button class="button_new" type="submit">
-                                        '.$admin_phrases['common']['arrow'].' '.$admin_phrases['common']['save_long'].'
+                                        '.$FD->text("admin", "button_arrow").' '.$FD->text("admin", "save_long").'
                                     </button>
                                 </td>
                             </tr>

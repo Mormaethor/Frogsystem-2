@@ -3,17 +3,13 @@
 $FD->setConfig('info', 'canonical', array());
 
 // Load Config Array
-$index = mysql_query ( '
-                        SELECT `show_type`, `show_size_x`, `show_size_y`
-                        FROM `'.$global_config_arr['pref'].'screen_config`
-                        WHERE `id` = 1
-', $FD->sql()->conn() );
-$screen_config_arr = mysql_fetch_assoc ( $index );
+$FD->loadConfig('screens');
+$screen_config_arr = $FD->configObject('screens')->getConfigArray();
 
 // Get Data from DB
 $index = mysql_query ( '
                         SELECT *
-                        FROM `'.$global_config_arr['pref'].'shop`
+                        FROM `'.$FD->config('pref').'shop`
 ', $FD->sql()->conn() );
 
 // Security Functions

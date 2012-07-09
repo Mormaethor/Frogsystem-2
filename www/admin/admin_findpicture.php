@@ -1,4 +1,5 @@
-<?php
+<?php if (!defined('ACP_GO')) die('Unauthorized access!');
+
 // Start Session
 session_start();
 
@@ -31,7 +32,7 @@ echo'
                                     <td align="left" class="configthin">
                                         <select class="select" name="cat">
                                         ';
-$index = mysql_query('SELECT * FROM '.$global_config_arr['pref'].'screen_cat WHERE cat_type = 1', $FD->sql()->conn() );
+$index = mysql_query('SELECT * FROM '.$FD->config('pref').'screen_cat WHERE cat_type = 1', $FD->sql()->conn() );
 
 while($cat_arr = mysql_fetch_array($index)) {
         echo '                                  <option value="'.$cat_arr['cat_id'].'"'. ($_POST['cat']==$cat_arr['cat_id']?'selected':'') .'>'. $cat_arr['cat_name'] .'</option>';
@@ -54,7 +55,7 @@ if (isset($_POST['cat']))
              <table border="0" cellpadding="2" cellspacing="0" width="287" style="padding-left:13px;"
     ';
     $_POST['cat'] = savesql($_POST['cat']);
-    $index = mysql_query('SELECT * FROM '.$global_config_arr['pref'].'screen WHERE cat_id = '. $_POST['cat'] .' ORDER BY screen_id DESC', $FD->sql()->conn() );
+    $index = mysql_query('SELECT * FROM '.$FD->config('pref').'screen WHERE cat_id = '. $_POST['cat'] .' ORDER BY screen_id DESC', $FD->sql()->conn() );
     $newLineStart = true;
     while ($screen_arr = mysql_fetch_array($index))
     {
