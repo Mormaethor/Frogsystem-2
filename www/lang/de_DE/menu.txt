@@ -308,6 +308,8 @@ page_title_tpl_fscodes:         „FSCodes“ bearbeiten
 page_link_tpl_fscodes:          FSCodes
 page_title_tpl_player:          „Flash-Player“ bearbeiten
 page_link_tpl_player:           Flash-Player
+page_title_tpl_forumfeed:       „Neueste Threads“ bearbeiten
+page_link_tpl_forumfeed:        Neueste Threads
 
 # Applets
 page_title_applets_add:         hinzufügen

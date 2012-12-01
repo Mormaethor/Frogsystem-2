@@ -145,6 +145,7 @@ INSERT INTO `fs2_admin_cp` (`page_id`, `group_id`, `page_file`, `page_pos`, `pag
 ('tpl_editor', 'templates', 'admin_editor_design.php', 13, 0),
 ('tpl_fscodes', 'templates', 'admin_editor_fscode.php', 14, 0),
 ('tpl_player', 'templates', 'admin_template_player.php', 20, 0),
+('tpl_forumfeed', 'templates', 'admin_template_forumfeed.php', 26, 0),
 ('user_config', 'users', 'admin_user_config.php', 1, 0),
 ('user_add', 'users', 'admin_user_add.php', 2, 0),
 ('user_edit', 'users', 'admin_user_edit.php', 3, 0),
