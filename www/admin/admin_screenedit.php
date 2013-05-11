@@ -39,6 +39,8 @@ elseif (isset($_POST[screenid]))
 //// Thumb neu erstellen ////
 /////////////////////////////
 
+    settype($_POST['screenid'], 'integer');
+
     if ($_POST['do'] == "newthumb")
     {
         $index = mysql_query("SELECT * FROM ".$global_config_arr[pref]."screen_config");  // Screenshot Konfiguration auslesen
@@ -49,8 +51,6 @@ elseif (isset($_POST[screenid]))
         $newthumb = create_thumb_from(image_url("images/screenshots/",$_POST['screenid'],FALSE, TRUE),$config_arr[screen_thumb_x],$config_arr[screen_thumb_y]);
         systext(create_thumb_notice($newthumb)."<br />(Cache leeren nicht vergessen!)");
     }
-
-    settype($_POST[screenid], 'integer');
 
     $index = mysql_query("SELECT * FROM ".$global_config_arr[pref]."screen WHERE screen_id = $_POST[screenid]", $db);
     $screen_arr = mysql_fetch_assoc($index);

@@ -534,7 +534,7 @@ function count_visit ( $GOTO )
         // check if errorpage
         if ( $GOTO != "404" && $GOTO != "403" ) {
                 // save IP & visit
-            $index = mysql_query ( "SELECT * FROM ".$global_config_arr['pref']."iplist WHERE ip = '".$_SERVER['REMOTE_ADDR']."'", $db );
+            $index = mysql_query ( 'SELECT * FROM '.$global_config_arr['pref']."iplist WHERE ip = '".savesql($_SERVER['REMOTE_ADDR'])."'", $db );
 
             if ( mysql_num_rows ( $index ) <= 0 ) {
                 mysql_query ( "UPDATE ".$global_config_arr['pref']."counter SET visits = visits + 1", $db );
@@ -556,7 +556,7 @@ function save_visitors ()
     global $global_config_arr;
 
     $time = time(); // timestamp
-    $ip = $_SERVER['REMOTE_ADDR']; // IP-Adress
+    $ip = savesql($_SERVER['REMOTE_ADDR']); // IP-Adress
 
         // get user_id or set user_id=0
         if ( isset ( $_SESSION['user_id'] ) && $_SESSION['user_level'] == "loggedin" ) {
@@ -570,7 +570,7 @@ function save_visitors ()
     mysql_query ( "DELETE FROM ".$global_config_arr['pref']."useronline WHERE date < (".$time." - 300)", $db );
     
     // save online users
-    $index = mysql_query ( "SELECT * FROM ".$global_config_arr['pref']."useronline WHERE ip='".$_SERVER['REMOTE_ADDR']."'", $db );
+    $index = mysql_query ( 'SELECT * FROM '.$global_config_arr['pref']."useronline WHERE ip='".$ip."'", $db );
 
         // update existing users
         if ( mysql_num_rows ( $index ) >= 1 && mysql_result ( $index, 0, "user_id" ) != $user_id ) {
@@ -579,7 +579,7 @@ function save_visitors ()
         if ( mysql_num_rows ( $index ) >= 1 ) {
         mysql_query ( "UPDATE ".$global_config_arr['pref']."useronline SET date = '".$time."' WHERE ip='".$ip."'", $db );
     } else {
-        mysql_query ( "INSERT INTO ".$global_config_arr['pref']."useronline (ip, user_id, date) VALUES ('".$_SERVER['REMOTE_ADDR']."', '".$user_id."', '".$time."')", $db );
+        mysql_query ( "INSERT INTO ".$global_config_arr['pref']."useronline (ip, user_id, date) VALUES ('".$ip."', '".$user_id."', '".$time."')", $db );
     }
 }
 
@@ -596,6 +596,7 @@ function save_referer ()
 
     // save referer
     $referer = preg_replace ( "=(.*?)\=([0-9a-z]{32})(.*?)=i", "\\1=\\3", $_SERVER['HTTP_REFERER'] );
+    $referer = savesql($referer);
     $index =  mysql_query ( "SELECT * FROM ".$global_config_arr['pref']."counter_ref WHERE ref_url = '".$referer."'", $db );
     
     if ( mysql_num_rows ( $index ) <= 0 ) {

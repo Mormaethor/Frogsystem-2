@@ -8,6 +8,8 @@ if ($_POST['sended'])
 {
     while (list($key, $val) = each($_POST['randompic_cat']))
     {
+        $key = intval($key); //better be safe than sorry
+        $val = intval($val);
         mysql_query("UPDATE ".$global_config_arr[pref]."screen_cat
                      SET randompic = '$val'
                      WHERE cat_id = '$key'", $db);

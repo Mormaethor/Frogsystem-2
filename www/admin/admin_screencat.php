@@ -6,7 +6,10 @@
 
 if ($_POST['cat_id'] && $_POST['cat_name'] && $_POST['sended'] == "edit")
 {
-    $_POST[cat_name] = savesql($_POST[cat_name]);
+    $_POST['cat_name'] = savesql($_POST['cat_name']);
+    $_POST['cat_id'] = intval($_POST['cat_id']);
+    $_POST['cat_type'] = intval($_POST['cat_type']);
+    $_POST['cat_visibility'] = intval($_POST['cat_visibility']);
 
     mysql_query("UPDATE ".$global_config_arr[pref]."screen_cat
                  SET cat_name = '$_POST[cat_name]',
@@ -21,6 +24,8 @@ if ($_POST['cat_id'] && $_POST['cat_name'] && $_POST['sended'] == "edit")
 ///////////////////////////
 elseif ($_POST['cat_id'] && $_POST['sended'] == "delete")
 {
+  $_POST['cat_id'] = intval($_POST['cat_id']);
+  $_POST['cat_move_to'] = intval($_POST['cat_move_to']);
   mysql_query("DELETE FROM ".$global_config_arr[pref]."screen_cat
                WHERE cat_id = '$_POST[cat_id]'", $db);
 
@@ -42,6 +47,8 @@ elseif ($_POST['cat_id'] AND $_POST['cat_action'])
 /// Kategorie bearbeiten ///
 ////////////////////////////
 
+
+  $_POST['cat_id'] = intval($_POST['cat_id']);
 
   if ($_POST['cat_action'] == "edit")
   {

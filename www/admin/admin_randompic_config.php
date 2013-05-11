@@ -10,7 +10,8 @@ if ($_POST['sended'] AND (($_POST['timed_deltime']==1 AND $_POST['deltime_time']
   settype($_POST[title],"integer");
   settype($_POST[type_priority],"integer");
   settype($_POST[use_priority_only],"integer");
-  
+  $_POST['active'] = intval($_POST['active']);
+
   if ($_POST[timed_deltime]!=1) {
     settype($_POST[timed_deltime],"integer");
   } else {

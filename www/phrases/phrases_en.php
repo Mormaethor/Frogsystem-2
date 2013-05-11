@@ -33,8 +33,8 @@ $phrases['dl_not_exist']      = "Download nicht vorhanden";
 
 // Profil
 $phrases['avatar_loaded']     = "Avatar wurde hochgeladen";
-$phrases['avatar_no_jpggif']  = "Avatar konnte nicht hocgeladen werden. Es muss ein JPG oder GIF sein";
-$phrases['avatar_to_big']     = "Avatar konnte nicht hocgeladen werden. Die Datei ist zu groﬂ";
+$phrases['avatar_no_jpggif']  = 'Avatar konnte nicht hochgeladen werden. Es muss ein JPG oder GIF sein';
+$phrases['avatar_to_big']     = 'Avatar konnte nicht hochgeladen werden. Die Datei ist zu groﬂ';
 $phrases['profile_update']    = "Profil wurde aktualisiert.";
 $phrases['pass_update']       = "Passwort wurde ge‰ndert.";
 $phrases['pass_failed']       = "Passwort konnte nicht ge‰ndert werden.";

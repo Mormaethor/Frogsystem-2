@@ -15,7 +15,7 @@ if ($_POST['dledit'] && $_POST['title'] && $_POST['text'] && $_POST['fname'][0] 
         mysql_query('DELETE FROM '.$global_config_arr['pref']."dl_files WHERE dl_id = '$_POST[editdlid]'", $db);
         image_delete('images/dl/', "$_POST[editdlid]_s");
         image_delete('images/dl/', $_POST['editdlid']);
-        systext('Download wurde gelöscht');
+        systext('Download wurde gel&ouml;scht');
 
         // Delete from Search Index
         require_once ( FS2_ROOT_PATH . "includes/searchfunctions.php" );
@@ -283,7 +283,7 @@ elseif ($_POST['dlid'] || $_POST['optionsadd'])
                             <tr>
                                 <td class="config" valign="top">
                                     File '.$i.':<br>
-                                    <font class="small">[Titel]<br>[URL]<br>[Große in KB]<br>[Anzahl der DLs]<br>[Mirror?]<br>[löschen]</font>
+                                    <font class="small">[Titel]<br>[URL]<br>[Gr&ouml;&szlig;e in KB]<br>[Anzahl der DLs]<br>[Mirror?]<br>[l&ouml;schen]</font>
                                 </td>
                                 <td class="config" valign="top">
                                     <input class="text" size="20" name="fname['.$j.']" value="'.killhtml($_POST['fname'][$j]).'" maxlength="100"><br />
@@ -292,7 +292,7 @@ elseif ($_POST['dlid'] || $_POST['optionsadd'])
                                     <input class="text" size="30" value="'.killhtml($_POST['fsize'][$j]).'" name="fsize['.$j.']" maxlength="8"> KB<br />
                                     <input class="text" size="30" value="'.$_POST['fcount'][$j].'" name="fcount['.$j.']" maxlength="100"> Downloads<br />
                                     Ja, Mirror: <input type="checkbox" name="fmirror['.$j.'] '.$f_checked.'"><br />
-                                    Löschen: <input name="delf['.$j.']" id="delf['.$j.']" value="'.$_POST['fid'][$j].'" type="checkbox"
+                                    L&ouml;schen: <input name="delf['.$j.']" id="delf['.$j.']" value="'.$_POST['fid'][$j].'" type="checkbox"
                                     onClick=\'delalert ("delf['.$j.']", "Soll das File (Nr. '.$i.') wirklich gelöscht werden?")\'>
                                     <input type="hidden" name="fid['.$j.']" value="'.$_POST['fid'][$j].'">
                                     <input type="hidden" name="fnew['.$j.']" value="'.$_POST['fnew'][$j].'">
@@ -306,7 +306,7 @@ elseif ($_POST['dlid'] || $_POST['optionsadd'])
                             <tr>
                                 <td class="config" valign="top">
                                     File '.$i.':<br>
-                                    <font class="small">[Titel]<br />[URL]<br />[Große in KB]<br />[Anzahl der DLs]<br />[Mirror?]</font>
+                                    <font class="small">[Titel]<br />[URL]<br />[Gr&ouml;&szlig;e in KB]<br />[Anzahl der DLs]<br />[Mirror?]</font>
                                 </td>
                                 <td class="config" valign="top">
                                     <input class="text" size="20" name="fname['.$j.']" maxlength="100"><br />

@@ -36,7 +36,7 @@ if ( $db && mysql_select_db ( $dbc['data'], $db ) ) {
     $global_config_arr['spam'] = $spam;
     //write $data into $global_config_arr['data']
     $global_config_arr['data'] = $dbc['data'];
-    //write systemüath into $global_config_arr['path']
+    //write systempath into $global_config_arr['path']
     $global_config_arr['path'] = dirname(__FILE__) . "/";
     //write real home page into $global_config_arr['home_real']
     if ( $global_config_arr['home'] == 1 ) {

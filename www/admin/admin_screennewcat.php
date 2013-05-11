@@ -4,9 +4,11 @@
 //// Kategorie hinzufügen ////
 //////////////////////////////
 
-if (isset($_POST[cat_name]))
+if (isset($_POST['cat_name']))
 {
-    $_POST[cat_name] = savesql($_POST[cat_name]);
+    $_POST['cat_name'] = savesql($_POST['cat_name']);
+    $_POST['cat_type'] = intval($_POST['cat_type']);
+    $_POST['cat_visibility'] = intval($_POST['cat_visibility']);
 
     $time = time();
     mysql_query("INSERT INTO ".$global_config_arr[pref]."screen_cat (cat_name, cat_type, cat_visibility, cat_date)

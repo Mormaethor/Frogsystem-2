@@ -12,7 +12,7 @@ $ann_arr = mysql_fetch_assoc ( $index );
 if ( $ann_arr['show_announcement'] != 0 && $ann_arr['activate_announcement'] == 1 ) {
 
     if ( $ann_arr['show_announcement'] == 2 && $global_config_arr['goto'] != $global_config_arr['home_real'] ) {
-        $template == "";
+        $template = '';
     } else {
         $ann_arr['announcement_text'] = fscode ( $ann_arr['announcement_text'], $ann_arr['ann_fscode'], $ann_arr['ann_html'], $ann_arr['ann_para'] );
         // Body Template
@@ -23,6 +23,6 @@ if ( $ann_arr['show_announcement'] != 0 && $ann_arr['activate_announcement'] == 
         $template = $template->display ();
     }
 } else {
-    $template == "";
+    $template = '';
 }
 ?>

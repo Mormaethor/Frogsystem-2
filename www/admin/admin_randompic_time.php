@@ -74,7 +74,7 @@ elseif ($_POST[random_action] == "edit"
         && isset($_POST[random_id])
        )
 {
-    settype($_POST[partner_id], 'integer');
+    settype($_POST['random_id'], 'integer');
 
     $index = mysql_query("SELECT * FROM ".$global_config_arr[pref]."screen_random WHERE random_id = $_POST[random_id]", $db);
     $random_arr = mysql_fetch_assoc($index);

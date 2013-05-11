@@ -392,7 +392,7 @@ $TEXT = array (
     "Die Farbe in der die Aufgabe dargestellt wird.",
 
     "captcha_config_dimensions_title" =>
-    "Abemessungen",
+    "Abmessungen",
 
     "captcha_config_dimensions_desc" =>
     "Größe des Captcha-Bildes.",

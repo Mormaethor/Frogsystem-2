@@ -37,7 +37,7 @@ while ( $affiliates_arr = mysql_fetch_assoc( $index ) ) {
     
     $all_arr[] = $partner;
     ( $affiliates_arr['partner_permanent'] == 1 ) ? ( $perm_arr[] = $partner ) : null;
-    ( $affiliates_arr['partner_permanent'] == 0 ) ? ( $non_arr[] = $partner ) : nul;
+    ( $affiliates_arr['partner_permanent'] == 0 ) ? ( $non_arr[] = $partner ) : null;
 }
 
 // Vars for Random-Selections

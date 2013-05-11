@@ -72,7 +72,7 @@ if ($_POST[dladd] && $_POST[title] && $_POST[text] && $_POST[fname][0] && $_POST
                                  '".$_POST[fmirror][$i]."');", $db);
         }
     }
-    systext("Download wurde hinzugefügt");
+    systext('Download wurde hinzugef&uuml;gt');
 }
 
 /////////////////////////////
@@ -100,7 +100,7 @@ else
                             <tr>
                                 <td class="config" valign="top" width="40%">
                                     Kategorie:<br>
-                                    <font class="small">Die News gehört zur Kategorie</font>
+                                    <font class="small">Die News geh&ouml;rt zur Kategorie</font>
                                 </td>
                                 <td class="config" width="60%" valign="top">
                                     <select name="catid">
@@ -111,7 +111,7 @@ else
     foreach ($valid_ids as $cat)
     {
         echo'
-                                        <option value="'.$cat[cat_id].'">'.str_repeat("&nbsp;&nbsp;&nbsp;&nbsp;", $cat['level']).$cat[cat_name].'</option>
+                                        <option value="'.$cat['cat_id'].'">'.str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $cat['level']).$cat['cat_name'].'</option>
         ';
     }
     echo'
@@ -151,7 +151,7 @@ else
                             <tr>
                                 <td class="config" valign="top">
                                     Screenshot: <font class="small">(optional)</font><br>
-                                    <font class="small">Dient als Vorschau für den Download.</font>
+                                    <font class="small">Dient als Vorschau f&uuml;r den Download.</font>
                                 </td>
                                 <td class="config" valign="top">
                                     <input type="file" class="text" name="dlimg" size="35"><br />
@@ -173,7 +173,7 @@ else
                             <tr>
                                 <td class="config" valign="top">
                                     File '.$i.':<br>
-                                    <font class="small">[Titel]<br />[URL]<br />[Große in KB]<br />[Mirror?]</font>
+                                    <font class="small">[Titel]<br />[URL]<br />[Gr&ouml;&szlig;e in KB]<br />[Mirror?]</font>
                                 </td>
                                 <td class="config" valign="top">
                                     <input class="text" size="20" name="fname['.$j.']" value="'.killhtml($_POST[fname][$j]).'" maxlength="100"><br />
@@ -190,12 +190,12 @@ else
                             <tr>
                                 <td class="config" valign="top">
                                     File '.$i.':<br>
-                                    <font class="small">[Titel]<br />[URL]<br />[Große in KB]<br />[Mirror?]</font>
+                                    <font class="small">[Titel]<br />[URL]<br />[Gr&ouml;&szlig;e in KB]<br />[Mirror?]</font>
                                 </td>
                                 <td class="config" valign="top">
                                     <input class="text" size="20" name="fname['.$j.']" maxlength="100"><br />
                                     <input class="text" size="30" name="furl['.$j.']" maxlength="255" id="furl'.$j.'">
-                                    <input class="button" type="button" onClick=\'document.getElementById("furl'.$j.'").value="'.$admin_dl_config_arr[quickinsert].'";\' value="Quick-Insert Pfad"><br />
+                                    <input class="button" type="button" onClick=\'document.getElementById("furl'.$j.'").value="'.$admin_dl_config_arr['quickinsert'].'";\' value="Quick-Insert Pfad"><br />
                                     <input class="text" size="30" name="fsize['.$j.']" maxlength="8"> KB<br />
                                     Ja, Mirror: <input type="checkbox" name="fmirror['.$j.']">
                                 </td>
@@ -212,12 +212,12 @@ else
                                 <td class="configthin">
                                     <input size="2" class="text" name="optionsadd">
                                     Files
-                                    <input class="button" type="submit" value="Hinzufügen">
+                                    <input class="button" type="submit" value="Hinzuf&uuml;gen">
                                 </td>
                             </tr>
                             <tr>
                                 <td class="config" valign="top">
-                                    Download veröffentlichen:<br>
+                                    Download ver&ouml;ffentlichen:<br>
                                     <font class="small">Aktiviert den Download</font>
                                 </td>
                                 <td class="config" valign="top">

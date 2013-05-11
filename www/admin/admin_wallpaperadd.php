@@ -25,7 +25,9 @@ if (mysql_num_rows($index)==0) {
       if (!isset($_FILES[$filesname]))
         $_POST['size'][$j] = "";
     }
-    
+
+    $_POST['catid'] = intval($_POST['catid']);
+
     mysql_query("INSERT INTO ".$global_config_arr[pref]."wallpaper (wallpaper_name, wallpaper_title, cat_id)
                  VALUES ('".$_POST[wallpaper_name]."',
                          '".$_POST[wallpaper_title]."',

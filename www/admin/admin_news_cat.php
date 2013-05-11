@@ -169,6 +169,9 @@ elseif (
 // No Data to write into DB
 if ( $_POST['cat_id'] && $_POST['cat_action'] )
 {
+    //security function
+    $_POST['cat_id'] = intval($_POST['cat_id']);
+
 	// Edit Category
 	if ( $_POST['cat_action'] == "edit" )
 	{
